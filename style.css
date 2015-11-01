@@ -1,0 +1,43 @@
+body { 
+  font: 14px verdana, helvetica neue, helvetica, arial, sans-serif;
+}
+
+html, body, svg { width: 100%; height: 100%; }
+
+g.JIRA, g.git { outline: 1px solid black; }
+
+g.Task { outline-color: lightskyblue; }
+g.Task line { stroke: lightskyblue; }
+g.Story { outline-color: #b147ca; }
+g.Story line { stroke: #b147ca; }
+g.Bug { outline-color: #cc0000; }
+g.Bug line { stroke: #cc0000; }
+g.TestingSubtask { outline-color: tan; }
+g.TestingSubtask line { stroke: tan; }
+g.TechnicalSubtask { outline-color: lime; }
+g.TechnicalSubtask line { stroke: lime; }
+
+g.commit { outline-color: gray; }
+g.branch { outline-color: black; }
+g.master { outline-color: navy; }
+
+rect.ghx-label-0 {fill:#fff;stroke:#707070;}
+text.ghx-label-0 {fill:#707070;}
+rect.ghx-label-1 {fill:#815b3a;}
+text.ghx-label-1 {fill:#fff;}
+rect.ghx-label-2 {fill:#f79232;}
+text.ghx-label-2 {fill:#fff;}
+rect.ghx-label-3 {fill:#d39c3f;}
+text.ghx-label-3 {fill:#fff;}
+rect.ghx-label-4 {fill:#3b7fc4;}
+text.ghx-label-4 {fill:#fff;}
+rect.ghx-label-5 {fill:#4a6785;}
+text.ghx-label-5 {fill:#fff;}
+rect.ghx-label-6 {fill:#8eb021;}
+text.ghx-label-6 {fill:#fff;}
+rect.ghx-label-7 {fill:#ac707a;}
+text.ghx-label-7 {fill:#fff;}
+rect.ghx-label-8 {fill:#654982;}
+text.ghx-label-8 {fill:#fff;}
+rect.ghx-label-9 {fill:#f15c75;}
+text.ghx-label-9 {fill:#fff;}

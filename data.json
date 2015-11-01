@@ -1,0 +1,108 @@
+﻿{
+	"nodes":[
+		{
+			"id": "issue_207736",
+			"type": "JIRA",
+			"data": {
+				"type": "Story",
+				"URL": "www.seznam.cz",
+				"code": "ZPL-321",
+				"summary": "Resend activation email",
+				"assignee": "Milan Dubský",
+				"assigneeImage": "https://secure.gravatar.com/avatar/91bad8ceeec43ae303790f8fe238164b",
+				"status": "Verification",
+				"statusColor": "darkorange",
+				"completed": 4,
+				"estimated": 10,
+				"epic": "CPB-310: Register/Login",
+				"epicColor": "ghx-label-4"
+			}
+		},
+		{
+			"id": "issue_207737",
+			"type": "JIRA",
+			"data": {
+				"type": "TestingSubtask",
+				"URL": "www.seznam.cz",
+				"code": "ZPL-322",
+				"summary": "Component automation",
+				"assignee": "Milan Dubský",
+				"assigneeImage": "https://secure.gravatar.com/avatar/91bad8ceeec43ae303790f8fe238164b",
+				"status": "In Progress",
+				"statusColor": "tan",
+				"completed": 3,
+				"estimated": 5
+			}
+		},
+		{
+			"id": "issue_207738",
+			"type": "JIRA",
+			"data": {
+				"type": "TechnicalSubtask",
+				"URL": "www.seznam.cz",
+				"code": "ZPL-323",
+				"summary": "C++ implementation",
+				"assignee": "Pavel Zářecký",
+				"assigneeImage": "https://secure.gravatar.com/avatar/d43e8ea63b61e7669ded5b9d3c2e980f",
+				"status": "In Progress",
+				"statusColor": "tan",
+				"completed": 1,
+				"estimated": 5
+			}
+		},
+		{
+			"id": "issue_221170",
+			"type": "JIRA",
+			"data": {
+				"type": "Task",
+				"URL": "www.seznam.cz",
+				"code": "ZPL-442",
+				"summary": "Lower size of debug Android library",
+				"assignee": "Pavel Zářecký",
+				"assigneeImage": "https://secure.gravatar.com/avatar/d43e8ea63b61e7669ded5b9d3c2e980f",
+				"status": "Open",
+				"statusColor": "gray",
+				"completed": 0,
+				"estimated": 15
+			}
+		},
+		{
+			"id": "issue_228801",
+			"type": "JIRA",
+			"data": {
+				"type": "Bug",
+				"URL": "www.seznam.cz",
+				"code": "ZPL-500",
+				"summary": "Wrong error when login to not existing server",
+				"assignee": "Katarína Varačková",
+				"assigneeImage": "https://secure.gravatar.com/avatar/91bad8ceeec43ae303790f8fe238164b",
+				"status": "Done",
+				"statusColor": "green",
+				"completed": 8,
+				"estimated": 8
+			}
+		},
+		{
+			"id": "ac891984fdc04981cde669841",
+			"type": "git",
+			"data": {
+				"type": "branch",
+				"URL": "http://www.seznam.cz",
+				"name": "zaap/devel",
+				"master": true
+			}
+		}
+	],
+	"edges":[
+		{
+			"source": "issue_207736",
+			"target": "issue_207737",
+			"type": "subtask"
+		},
+		{
+			"source": "issue_207736",
+			"target": "issue_207738",
+			"type": "subtask"
+		}
+	]
+}
