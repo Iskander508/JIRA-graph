@@ -1,21 +1,21 @@
 body { 
-  font: 14px verdana, helvetica neue, helvetica, arial, sans-serif;
+  font: 14px Arial,sans-serif;
 }
 
 html, body, svg { width: 100%; height: 100%; }
 
 g.JIRA, g.git { outline: 1px solid black; }
 
-g.Task { outline-color: lightskyblue; }
-g.Task line { stroke: lightskyblue; }
+g.Task { outline-color: #bfe4ff; }
+g.Task line { stroke: #bfe4ff; }
 g.Story { outline-color: #b147ca; }
 g.Story line { stroke: #b147ca; }
 g.Bug { outline-color: #cc0000; }
 g.Bug line { stroke: #cc0000; }
-g.TestingSubtask { outline-color: tan; }
-g.TestingSubtask line { stroke: tan; }
-g.TechnicalSubtask { outline-color: lime; }
-g.TechnicalSubtask line { stroke: lime; }
+g.TestingSubtask { outline-color: #cccb6b; }
+g.TestingSubtask line { stroke: #cccb6b; }
+g.TechnicalSubtask { outline-color: #b3f290; }
+g.TechnicalSubtask line { stroke: #b3f290; }
 
 g.commit { outline-color: gray; }
 g.branch { outline-color: black; }
