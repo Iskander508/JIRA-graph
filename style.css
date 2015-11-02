@@ -4,7 +4,8 @@ body {
 
 html, body, svg { width: 100%; height: 100%; }
 
-g.JIRA, g.git { outline: 1px solid black; }
+g.JIRA { outline: 1px solid black; }
+g.git { outline: 2px solid black; }
 
 g.Task { outline-color: #bfe4ff; }
 g.Task line { stroke: #bfe4ff; }
@@ -18,8 +19,9 @@ g.TechnicalSubtask { outline-color: #b3f290; }
 g.TechnicalSubtask line { stroke: #b3f290; }
 
 g.commit { outline-color: gray; }
-g.branch { outline-color: black; }
-g.master { outline-color: navy; }
+g.branch { outline-color: orange; }
+g.commit text { fill: gray; }
+g.master text { fill: red; }
 
 rect.ghx-label-0 {fill:#fff;stroke:#707070;}
 text.ghx-label-0 {fill:#707070;}
