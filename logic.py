@@ -17,7 +17,7 @@ class Logic:
         
     def parseActiveSprintIssues(self, jiraProjectId):
         issues = {}
-        for majorIssueData in getActiveSprintsIssues(jiraProjectId):
+        for majorIssueData in self.getActiveSprintsIssues(jiraProjectId):
             issueData = self.jira.getIssue(majorIssueData['key'])
             issue = self.parseIssue(issueData)
             
@@ -91,7 +91,7 @@ class Logic:
                     })
             if 'inwardIssue' in link:
                 # Add only inward links that link from another project
-                issueProjectKey = issueData['inwardIssue']['key'].split('-')[0]
+                issueProjectKey = link['inwardIssue']['key'].split('-')[0]
                 if issueProjectKey != mainIssueProjectKey:
                     links.append({
                         'key': link['inwardIssue']['key'],
@@ -109,7 +109,7 @@ class Logic:
         for id, name in activeSprints.items():
             board = self.jira.getAgileBoard(jiraProjectId, id)
             for key, value in board['contents'].items():
-                if 'Issues' in key:
+                if ('Issues' in key) and (type(value) is list):
                     issues.extend(value)
 
         return issues
