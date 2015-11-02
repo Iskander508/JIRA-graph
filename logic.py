@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import jira
+import graph
     
 class LogicError(Exception):
     def __init__(self, value):
@@ -14,6 +15,36 @@ class Logic:
     def __init__(self, jiraUrl='https://jira.atlassian.com', jiraAuth=None):
         self.jira = jira.JIRA(url=jiraUrl, auth=jiraAuth)
         self.jiraUrl = jiraUrl
+        
+    def createGraph(self, jiraProjectId, filePath):
+        
+        issues = self.parseActiveSprintIssues(jiraProjectId)
+        
+        codeIdMap = {}
+        for id, data in issues.items():
+            codeIdMap[data['code']] = id
+          
+        g = graph.Graph()
+        for id, data in issues.items():
+            if data['statusColor'] == 'blue-gray':
+                data['statusColor'] = 'gray'
+            if data['statusColor'] == 'yellow':
+                data['statusColor'] = 'orange'
+                
+            g.addNode(graph.Node('issue_' + id, graph.Node.Type.JIRA, data))
+            
+            if 'subtasks' in data:
+                for code in data['subtasks']:
+                    if code in codeIdMap:
+                        g.addEdge(graph.Edge('issue_' + id, 'issue_' + codeIdMap[code], 'subtask'))
+                
+        
+            if 'links' in data:
+                for link in data['links']:
+                    if link['key'] in codeIdMap:
+                        g.addEdge(graph.Edge('issue_' + id, 'issue_' + codeIdMap[link['key']], link['type']))
+                        
+        g.saveGraphJson(filePath)
         
     def parseActiveSprintIssues(self, jiraProjectId):
         issues = {}

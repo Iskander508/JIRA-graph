@@ -68,8 +68,8 @@ class Graph:
         self.edges = []
 
     def addNode(self, node):
-        if not type(node) == Node:
-            raise GraphError('Not a node object: ' + repr(type(node)))
+        if not isinstance(node, Node):
+            raise GraphError('Not a node object: ' + repr(node))
             
         if node.id in self.nodeIds:
             raise GraphError('Node already added to graph: ' + node.id)
@@ -78,8 +78,8 @@ class Graph:
         self.nodeIds.add(node.id)
         
     def addEdge(self, edge):
-        if not type(edge) == Edge:
-            raise GraphError('Not a edge object: ' + repr(type(edge)))
+        if not isinstance(edge, Edge):
+            raise GraphError('Not a edge object: ' + repr(edge))
         self.edges.append(edge)
         
     def saveGraphJson(self, filePath, additionalData=None):
