@@ -120,15 +120,6 @@ class Logic:
                     'key': link['outwardIssue']['key'],
                     'type': link['type']['outward']
                     })
-            if 'inwardIssue' in link:
-                # Add only inward links that link from another project
-                issueProjectKey = link['inwardIssue']['key'].split('-')[0]
-                if issueProjectKey != mainIssueProjectKey:
-                    links.append({
-                        'key': link['inwardIssue']['key'],
-                        'type': link['type']['inward']
-                        })
-            
         return links
 
     def getActiveSprintsIssues(self, jiraProjectId):
