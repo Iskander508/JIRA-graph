@@ -237,7 +237,7 @@ function renderGraph(content) {
         if (path.link.data) {
             if (!path.label) {
                 var svgText = Viva.Graph.svg('text').text(path.link.data);
-                svgText.attr('font-size', 8);
+                svgText.attr('font-size', 9);
                 path.parentElement.append(svgText);
                 path["label"] = svgText;
             }
@@ -252,7 +252,10 @@ function renderGraph(content) {
     // Render the graph
     var layout = Viva.Graph.Layout.forceDirected(graph, {
         springLength: 150,
-        springCoeff: 0.000005,
+        springCoeff: 0.00005,
+        //dragCoeff: 0.002,
+        //gravity: -1,
+        timeStep: 50
        // dragCoeff: 0.02,
         //gravity: 0.1
         /*springLength: 150,
