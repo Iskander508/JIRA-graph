@@ -14,7 +14,7 @@ class GraphError(Exception):
 
 
 class Node:
-    Type = enum(JIRA='JIRA', GIT='git')
+    Type = enum(JIRA='JIRA', GIT='git', STASH='stash')
     def __init__(self, id, _type, data):
         self.id = id
         self._type = _type
@@ -41,6 +41,12 @@ class Node:
                 or (not 'name' in data)):
                     raise GraphError('Missing field in git data node: ' + json.dumps(data, indent=4))
                     
+        if _type == Node.Type.STASH:
+            if ((not 'reviewers' in data)
+                or (not 'name' in data)
+                or (not 'URL' in data)):
+                    raise GraphError('Missing field in stash data node: ' + json.dumps(data, indent=4))
+                    
     def toObject(self):
         return {
             'id': self.id,
@@ -49,17 +55,19 @@ class Node:
             }
 
 class Edge:
-    def __init__(self, source, target, _type):
+    def __init__(self, source, target, _type=None):
         self.source = source
         self.target = target
         self._type = _type
         
     def toObject(self):
-        return {
+        object = {
             'source': self.source,
-            'target': self.target,
-            'type': self._type
+            'target': self.target
             }
+        if self._type:
+            object['type'] = self._type
+        return object
         
 class Graph:
     def __init__(self):

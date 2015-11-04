@@ -16,13 +16,21 @@ class Logic:
         self.jira = jira.JIRA(url=jiraUrl, auth=jiraAuth)
         self.jiraUrl = jiraUrl
         
-    def createGraph(self, jiraProjectId, filePath):
+    def createGraph(self, jiraProjectId, filePath, masterBranches=[]):
         
         issues = self.parseActiveSprintIssues(jiraProjectId)
         
         codeIdMap = {}
+        branches = {}
         for id, data in issues.items():
             codeIdMap[data['code']] = id
+            if 'branches' in data:
+                for branch in data['branches']:
+                    if branch['repository'] == 'avg':
+                        branches[branch['name']] = False
+        
+        for branch in masterBranches:
+            branches[branch] = True
           
         g = graph.Graph()
         for id, data in issues.items():
@@ -31,18 +39,24 @@ class Logic:
             if data['statusColor'] == 'yellow':
                 data['statusColor'] = 'orange'
                 
-            g.addNode(graph.Node('issue_' + id, graph.Node.Type.JIRA, data))
+            g.addNode(graph.Node(self.getIssueNodeId(id), graph.Node.Type.JIRA, data))
             
             if 'subtasks' in data:
                 for code in data['subtasks']:
                     if code in codeIdMap:
-                        g.addEdge(graph.Edge('issue_' + id, 'issue_' + codeIdMap[code], 'subtask'))
-                
+                        g.addEdge(graph.Edge(self.getIssueNodeId(id), self.getIssueNodeId(codeIdMap[code]), 'subtask'))
         
             if 'links' in data:
                 for link in data['links']:
                     if link['key'] in codeIdMap:
-                        g.addEdge(graph.Edge('issue_' + id, 'issue_' + codeIdMap[link['key']], link['type']))
+                        g.addEdge(graph.Edge(self.getIssueNodeId(id), self.getIssueNodeId(codeIdMap[link['key']]), link['type']))
+                        
+            if 'pullRequests' in data:
+                for pullRequest in data['pullRequests']:
+                    if (pullRequest['status'] != 'MERGED') and (pullRequest['status'] != 'DECLINED'):
+                        pullRequestId = self.getPullRequestNodeId(pullRequest['id'])
+                        g.addNode(graph.Node(pullRequestId, graph.Node.Type.STASH, pullRequest))
+                        g.addEdge(graph.Edge(self.getIssueNodeId(id), pullRequestId))
                         
         g.saveGraphJson(filePath)
         
@@ -191,3 +205,12 @@ class Logic:
             
     def getIssueUrl(self, issueCode):
         return self.jiraUrl + '/browse/' + issueCode
+        
+    def getIssueNodeId(self, issueId):
+        return 'issue_' + str(issueId)
+        
+    def getPullRequestNodeId(self, pullRequestId):
+        return 'pullRequest_' + str(pullRequestId).replace('#','')
+        
+    def getGitNodeId(self, gitId):
+        return 'git_' + str(gitId).replace('/','_').replace('@','_').replace('-','_')
