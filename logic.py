@@ -52,6 +52,8 @@ class Logic:
             issueData = self.jira.getIssue(majorIssueData['key'])
             issue = self.parseIssue(issueData)
             
+            issue['done'] = majorIssueData['done']
+            
             if 'epicField' in majorIssueData:
                 issue['epic'] = majorIssueData['epicField']['text']
                 issue['epicColor'] = majorIssueData['epicField']['epicColor']
@@ -102,7 +104,48 @@ class Logic:
         if len(links) != 0:
             issue['links'] = links
             
+        issue.update(self.parseIssueDetails(self.jira.getIssueDetails(issueData['id'])))
+            
         return issue
+        
+    def parseIssueDetails(self, issueDetails):
+        branches = []
+        pullRequests = []
+        for detail in issueDetails['detail']:
+            for branch in detail['branches']:
+                branches.append({
+                    'name': branch['name'],
+                    'URL': branch['url'],
+                    'repository': branch['repository']['name']
+                    })
+                    
+            for pullRequest in detail['pullRequests']:
+                reviewers = []
+                for reviewer in pullRequest['reviewers']:
+                    reviewers.append({
+                        'name': reviewer['name'],
+                        'approved': reviewer['approved']
+                        })
+            
+                pullRequests.append({
+                    'id': pullRequest['id'],
+                    'name': pullRequest['name'],
+                    'source': pullRequest['source']['branch'],
+                    'destination': pullRequest['destination']['branch'],
+                    'repository': pullRequest['source']['repository']['name'],
+                    'URL': pullRequest['url'],
+                    'status': pullRequest['status'],
+                    'reviewers': reviewers
+                    })
+
+        details = {}
+        if len(branches) != 0:
+            details['branches'] = branches
+            
+        if len(pullRequests) != 0:
+            details['pullRequests'] = pullRequests
+            
+        return details
         
     def getIssueSubtasks(self, issueData):        
         subtasks = []
