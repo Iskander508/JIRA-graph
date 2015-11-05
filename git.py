@@ -7,6 +7,12 @@ class Branch:
     def __init__(self, name, remote=True):
         self.name = name
         self.remote = remote
+        
+    def __repr__(self):
+        return 'Branch' + str({
+            'name': self.name,
+            'remote': self.remote
+            })
 
 class GIT:
     def __init__(self, repositoryPath, gitExecutable='git.exe'):
@@ -49,6 +55,18 @@ class GIT:
             params.append(path)
         return self.runGit(params)
         
+    def getBranches(self, id, remoteOnly=True):
+        branches = []
+        refListStr = self.runGit(['log', '--format="%d"', '--max-count=1', id])
+        print(refListStr)
+        refList = refListStr.strip('"').strip().lstrip('(').rstrip(')').split(', ')
+        for item in refList:
+            if not 'tag:' in item:
+                remote = item.startswith('origin/')
+                name = item[len('origin/'):] if remote else item
+                if remote or (not remoteOnly):
+                    branches.append(Branch(name, remote))
+        return branches
         
     def conflicts(self):
         conflicts = []

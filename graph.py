@@ -20,7 +20,7 @@ class Node:
         self._type = _type
         self.data = data
         
-        if not (_type == Node.Type.JIRA or _type == Node.Type.GIT):
+        if not (_type == Node.Type.JIRA or _type == Node.Type.GIT or _type == Node.Type.STASH):
             raise GraphError('Invalid node type: ' + _type)
         
         if _type == Node.Type.JIRA:
@@ -60,6 +60,9 @@ class Edge:
         self.target = target
         self._type = _type
         
+        if source == target:
+            raise GraphError('Invalid edge - source and target same: ' + source)
+        
     def toObject(self):
         object = {
             'source': self.source,
@@ -75,6 +78,9 @@ class Graph:
         self.nodeIds = set()
         self.edges = []
 
+    def hasNode(self, nodeId):
+        return nodeId in self.nodeIds
+        
     def addNode(self, node):
         if not isinstance(node, Node):
             raise GraphError('Not a node object: ' + repr(node))

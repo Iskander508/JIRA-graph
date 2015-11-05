@@ -12,9 +12,14 @@ class LogicError(Exception):
 
 
 class Logic:
-    def __init__(self, jiraUrl='https://jira.atlassian.com', jiraAuth=None):
-        self.jira = jira.JIRA(url=jiraUrl, auth=jiraAuth)
-        self.jiraUrl = jiraUrl
+    def __init__(self, config={
+                                'jira': {
+                                    'url': 'https://jira.atlassian.com',
+                                    'auth': None
+                                    }
+                              }):
+        self.jira = jira.JIRA(url=config['jira']['url'], auth=config['jira']['auth'])
+        self.config = config
         
     def createGraph(self, jiraProjectId, filePath, masterBranches=[]):
         
@@ -55,7 +60,8 @@ class Logic:
                 for pullRequest in data['pullRequests']:
                     if (pullRequest['status'] != 'MERGED') and (pullRequest['status'] != 'DECLINED'):
                         pullRequestId = self.getPullRequestNodeId(pullRequest['id'])
-                        g.addNode(graph.Node(pullRequestId, graph.Node.Type.STASH, pullRequest))
+                        if not g.hasNode(pullRequestId):
+                            g.addNode(graph.Node(pullRequestId, graph.Node.Type.STASH, pullRequest))
                         g.addEdge(graph.Edge(self.getIssueNodeId(id), pullRequestId))
                         
         g.saveGraphJson(filePath)
@@ -204,7 +210,7 @@ class Logic:
         return activeSprints
             
     def getIssueUrl(self, issueCode):
-        return self.jiraUrl + '/browse/' + issueCode
+        return self.config['jira']['url'] + '/browse/' + issueCode
         
     def getIssueNodeId(self, issueId):
         return 'issue_' + str(issueId)
