@@ -34,7 +34,11 @@ function renderGraph(content) {
 
         var svgNode = Viva.Graph.svg('g');
         svgNode.attr('id', node.id + '_' + makeUniqueId());
-        svgNode.attr('class', node.data.type + ' ' + node.data.data.type);
+        var classes = node.data.type;
+        if ('type' in node.data.data) {
+            classes += ' ' + node.data.data.type;
+        }
+        svgNode.attr('class', classes);
 
         switch (node.data.type) {
             case 'JIRA':
@@ -123,6 +127,51 @@ function renderGraph(content) {
 
                     if (gitData.master) {
                         svgNode.attr('class', svgNode.attr('class') + ' master');
+                    }
+                }
+                break;
+            case 'stash':
+                {
+                    var pullRequestData = node.data.data;
+
+                    {
+                        var svgTitle = Viva.Graph.svg('a');
+                        svgTitle.link(pullRequestData.URL);
+                        svgTitle.attr('target', '_blank');
+
+                        {
+                            var svgText = Viva.Graph.svg('text')
+                            .attr('x', 5)
+                            .attr('y', 15)
+                            .text(pullRequestData.id + ': ' + pullRequestData.name);
+                            svgTitle.append(svgText);
+                        }
+                        
+                        // tooltip
+                        {
+                            var text;
+                            var index;
+                            for (index = 0; index < pullRequestData.reviewers.length; ++index) {
+                                var reviewer = pullRequestData.reviewers[index];
+                                var line = reviewer.name + ' ' + (reviewer.approved ? '(OK)' : '(?)');
+
+                                if (text) {
+                                    text += '\n';
+                                } else {
+                                    text = 'Reviewers:\n';
+                                }
+
+                                text += line;
+                            }
+
+                            var svgTooltip = Viva.Graph.svg('title');
+                            if (text) {
+                                svgTooltip.text(text);
+                            }
+
+                            svgTitle.append(svgTooltip);
+                        }
+                        svgNode.append(svgTitle);
                     }
                 }
                 break;
