@@ -1,4 +1,4 @@
-
+﻿
 // Generates a unique string identifier
 function makeUniqueId() {
     var text = "";
@@ -46,9 +46,10 @@ function renderGraph(content) {
                     var issueData = node.data.data;
                     
                     {
-                        var nodeLine = Viva.Graph.svg('line');
-                        nodeLine.attr('stroke-width', '5')
-                        .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', '46px');
+                        var nodeLine = Viva.Graph.svg('line')
+                            .attr('stroke-width', '5')
+                            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 46);
+                        nodeLine.append(Viva.Graph.svg('title').text(issueData.type));
                         svgNode.append(nodeLine);
                     }
 
@@ -56,11 +57,13 @@ function renderGraph(content) {
                         var svgTitle = Viva.Graph.svg('a');
                         svgTitle.link(issueData.URL);
                         svgTitle.attr('target', '_blank');
+                        svgTitle.append(Viva.Graph.svg('title').text(issueData.code + ': ' + issueData.summary));
 
                         var svgText = Viva.Graph.svg('text')
                             .attr('x', 5)
                             .attr('y', 15)
-                            .text(issueData.code + ': ' + issueData.summary);
+                            .text(issueData.code + ': ' + issueData.summary)
+                            .attr('class', ('done' in issueData && issueData.done || issueData.status == 'Done') ? 'done' : '');
                         svgTitle.append(svgText);
                         svgNode.append(svgTitle);
                     }
@@ -135,13 +138,24 @@ function renderGraph(content) {
                     var pullRequestData = node.data.data;
 
                     {
+                        {
+                            var svgImage = Viva.Graph.svg('image')
+                               .attr('width', 18)
+                               .attr('height', 15)
+                               .attr('x', 2).attr('y', 2)
+                               .link('pull-request.svg');
+                            svgImage.append(Viva.Graph.svg('title').text('Pull request'));
+                            svgNode.append(svgImage);
+                        }
+
                         var svgTitle = Viva.Graph.svg('a');
                         svgTitle.link(pullRequestData.URL);
                         svgTitle.attr('target', '_blank');
 
+                        
                         {
                             var svgText = Viva.Graph.svg('text')
-                            .attr('x', 5)
+                            .attr('x', 22)
                             .attr('y', 15)
                             .text(pullRequestData.id + ': ' + pullRequestData.name);
                             svgTitle.append(svgText);
@@ -153,7 +167,7 @@ function renderGraph(content) {
                             var index;
                             for (index = 0; index < pullRequestData.reviewers.length; ++index) {
                                 var reviewer = pullRequestData.reviewers[index];
-                                var line = reviewer.name + ' ' + (reviewer.approved ? '(OK)' : '(?)');
+                                var line = reviewer.name + ' ' + (reviewer.approved ? '(✓)' : '(?)');
 
                                 if (text) {
                                     text += '\n';
@@ -164,10 +178,8 @@ function renderGraph(content) {
                                 text += line;
                             }
 
-                            var svgTooltip = Viva.Graph.svg('title');
-                            if (text) {
-                                svgTooltip.text(text);
-                            }
+                            var svgTooltip = Viva.Graph.svg('title')
+                                .text(pullRequestData.source + ' → ' + pullRequestData.destination + (text ? '\n' + text : ''));
 
                             svgTitle.append(svgTooltip);
                         }

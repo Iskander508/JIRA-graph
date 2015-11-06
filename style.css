@@ -19,10 +19,13 @@ g.TestingSubtask line { stroke: #cccb6b; }
 g.TechnicalSubtask { outline-color: #b3f290; }
 g.TechnicalSubtask line { stroke: #b3f290; }
 
+g text.done { text-decoration: line-through; }
+
 g.commit { outline-color: gray; }
 g.branch { outline-color: orange; }
 g.commit text { fill: gray; }
 g.master text { fill: red; }
+
 
 rect.ghx-label-0 {fill:#fff;stroke:#707070;}
 text.ghx-label-0 {fill:#707070;}
