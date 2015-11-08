@@ -16,6 +16,10 @@ class Logic:
                                 'jira': {
                                     'url': 'https://jira.atlassian.com',
                                     'auth': None
+                                    },
+                                'git': {
+                                    'repository': 'C:\\git',
+                                    'repositoryName': 'avg'
                                     }
                               }):
         self.jira = jira.JIRA(url=config['jira']['url'], auth=config['jira']['auth'])
@@ -31,7 +35,7 @@ class Logic:
             codeIdMap[data['code']] = id
             if 'branches' in data:
                 for branch in data['branches']:
-                    if branch['repository'] == 'avg':
+                    if branch['repository'] == config['git']['repositoryName']:
                         branches[branch['name']] = False
         
         for branch in masterBranches:
