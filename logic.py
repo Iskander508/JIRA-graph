@@ -3,6 +3,8 @@
 
 import jira
 import graph
+import gitGraph
+import git
     
 class LogicError(Exception):
     def __init__(self, value):
@@ -35,13 +37,24 @@ class Logic:
             codeIdMap[data['code']] = id
             if 'branches' in data:
                 for branch in data['branches']:
-                    if branch['repository'] == config['git']['repositoryName']:
+                    if branch['repository'] == self.config['git']['repositoryName']:
                         branches[branch['name']] = False
         
         for branch in masterBranches:
             branches[branch] = True
+            
           
         g = graph.Graph()
+        gitRepository = git.GIT(self.config['git']['repository'])
+        
+        for branch in self.calculateBranches(branches):
+            branch.update({'type': 'branch' if (len(branch['branchNames']) != 0) else 'commit'})
+            # TODO Add stash URL
+            nodeId = self.getGitNodeId(branch['id'])
+            g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, branch))
+            for successor in branch['successors']:
+                g.addEdge(graph.Edge(nodeId, self.getGitNodeId(successor), gitRepository.getDistance(branch['id'], successor)))
+        
         for id, data in issues.items():
             if data['statusColor'] == 'blue-gray':
                 data['statusColor'] = 'gray'
@@ -49,6 +62,15 @@ class Logic:
                 data['statusColor'] = 'orange'
                 
             g.addNode(graph.Node(self.getIssueNodeId(id), graph.Node.Type.JIRA, data))
+            
+            if 'branches' in data:
+                linkedBranches = set()
+                for branch in data['branches']:
+                    gitId = gitRepository.revParse('origin/' + branch['name'])
+                    nodeId = self.getGitNodeId(gitId)
+                    if gitId not in linkedBranches:
+                        g.addEdge(graph.Edge(self.getIssueNodeId(id), nodeId))
+                        linkedBranches.add(gitId)
             
             if 'subtasks' in data:
                 for code in data['subtasks']:
@@ -66,9 +88,58 @@ class Logic:
                         pullRequestId = self.getPullRequestNodeId(pullRequest['id'])
                         if not g.hasNode(pullRequestId):
                             g.addNode(graph.Node(pullRequestId, graph.Node.Type.STASH, pullRequest))
+                            
+                            # Add links to source and target branch
+                            if pullRequest['repository'] == self.config['git']['repositoryName']:
+                                sourceGitId = gitRepository.revParse('origin/' + pullRequest['source'])
+                                targetGitId = gitRepository.revParse('origin/' + pullRequest['destination'])
+                                sourceNodeId = self.getGitNodeId(sourceGitId)
+                                targetNodeId = self.getGitNodeId(targetGitId)
+                                if g.hasNode(sourceNodeId):
+                                    g.addEdge(graph.Edge(sourceNodeId, pullRequestId))
+                                if g.hasNode(targetNodeId):
+                                    g.addEdge(graph.Edge(pullRequestId, targetNodeId))
+                                
                         g.addEdge(graph.Edge(self.getIssueNodeId(id), pullRequestId))
                         
         g.saveGraphJson(filePath)
+        
+    def calculateBranches(self, branches):
+        gitRepository = git.GIT(self.config['git']['repository'])
+        
+        gitRepository.reset()
+        gitRepository.fetch()
+        
+        g = gitGraph.GitGraph(gitRepository)
+        
+        masterIds = set()
+        for name, master in branches.items():
+            remoteName = 'origin/' + name
+            g.add(remoteName)
+            if master:
+                masterIds.add(gitRepository.revParse(remoteName))
+          
+        result = []
+        for id in g.getIds():
+            branchNames = []
+            masterBranch = (id in masterIds)
+            for branch in gitRepository.getBranches(id):
+                branchNames.append(branch.name)
+            
+            inMaster = (not masterBranch
+                        and g.getPredecessors(id, direct=False).isdisjoint(masterIds)
+                        and not g.getSuccessors(id, direct=False).isdisjoint(masterIds)
+                        )
+            
+            result.append({
+                            'id': id,
+                            'master': masterBranch,
+                            'branchNames': branchNames,
+                            'inMaster': inMaster,
+                            'successors': g.getSuccessors(id)
+                        })
+                        
+        return result
         
     def parseActiveSprintIssues(self, jiraProjectId):
         issues = {}

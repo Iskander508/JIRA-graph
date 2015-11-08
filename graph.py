@@ -37,8 +37,7 @@ class Node:
                     
         if _type == Node.Type.GIT:
             if ((not 'type' in data)
-                or (not 'URL' in data)
-                or (not 'name' in data)):
+                or (not 'URL' in data)):
                     raise GraphError('Missing field in git data node: ' + json.dumps(data, indent=4))
                     
         if _type == Node.Type.STASH:
