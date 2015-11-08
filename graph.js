@@ -162,8 +162,21 @@ function renderGraph(content, options) {
                         svgTitle.link(gitData.URL);
                         svgTitle.attr('target', '_blank');
 
+
+                        {
+                            var svgImage = Viva.Graph.svg('image')
+                               .attr('width', 15)
+                               .attr('height', 15)
+                               .attr('x', 2).attr('y', 2)
+                               .link((gitData.type == 'branch') ? 'branch.svg' : 'git.png');
+                            if (gitData.type == 'branch') {
+                                svgImage.append(Viva.Graph.svg('title').text(gitData.master ? 'master branch' : 'branch'));
+                            }
+                            svgNode.append(svgImage);
+                        }
+
                         var svgText = Viva.Graph.svg('text')
-                            .attr('x', 5)
+                            .attr('x', 20)
                             .attr('y', 15)
                             .text(gitData.name);
                         svgTitle.append(svgText);
