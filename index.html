@@ -9,6 +9,10 @@
     <script type="text/javascript">
         function main() {
             drawGraph();
+
+            window.setInterval(function(){
+                drawGraph();
+            }, 3600 * 1000);
         }
 
         function drawGraph() {
@@ -40,7 +44,7 @@
     <div id="config">
         <form id="config-form">
             <span title="Show JIRA issues"><input type="checkbox" id="JIRA" name="JIRA" value="JIRA" checked />JIRA issues</span><br />
-            &nbsp;&nbsp;<span title="Show done tasks and subtasks"><input type="checkbox" id="JIRA-all" name="JIRA-all" value="JIRA-all" class="JIRA-all" /><span id="JIRA-all-text">All issues</span></span><br />
+            &nbsp;&nbsp;<span title="Show open and done tasks and subtasks"><input type="checkbox" id="JIRA-all" name="JIRA-all" value="JIRA-all" class="JIRA-all" /><span id="JIRA-all-text">All issues</span></span><br />
             <span title="Show branch pull-requests"><input type="checkbox" id="pull" name="pull" value="pull" checked />Pull-requests</span><br />
             <span title="Show Development branches"><input type="checkbox" id="branches" name="branches" value="branches" checked />Branches</span><br />
             &nbsp;&nbsp;<span title="Show branches merged in master branch"><input type="checkbox" id="merged" name="merged" value="merged" class="merged" /><span id="merged-text">Merged</span></span><br />

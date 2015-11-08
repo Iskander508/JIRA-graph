@@ -132,7 +132,7 @@ function renderGraph(content, options) {
                         svgStatus.append(svgStatusText);
                         
                         if (issueData.estimated != 0) {
-                            var totalLength = issueData.estimated*5;
+                            var totalLength = issueData.estimated*6;
                             if (totalLength > 200) totalLength = 200;
                             var completedLength = totalLength * issueData.completed / issueData.estimated;
 
