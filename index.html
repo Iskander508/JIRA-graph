@@ -10,11 +10,16 @@
         function main() {
             $.getJSON("data.json", function (content) {
                 renderGraph(content);
+
+                if ('timestamp' in content) {
+                    $('#timestamp').html(content.timestamp);
+                }
             });
         }
     </script>
 
 </head>
 <body onload='main()'>
+    <div id="footer">Data gathered: <span id="timestamp"></span></div>
 </body>
 </html>

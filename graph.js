@@ -26,7 +26,6 @@ function renderGraph(content) {
             graph.addLink(edge.source, edge.target, edge.type);
         }
     }
-    
 
 
     var graphics = Viva.Graph.View.svgGraphics();
@@ -242,11 +241,11 @@ function renderGraph(content) {
     var marker = Viva.Graph.svg('marker')
                    .attr('id', 'Triangle')
                    .attr('viewBox', "0 0 10 10")
-                   .attr('refX', "10")
-                   .attr('refY', "5")
+                   .attr('refX', 10)
+                   .attr('refY', 5)
                    .attr('markerUnits', "strokeWidth")
-                   .attr('markerWidth', "10")
-                   .attr('markerHeight', "5")
+                   .attr('markerWidth', 10)
+                   .attr('markerHeight', 5)
                    .attr('orient', "auto");
     marker.append('path').attr('d', 'M 0 0 L 10 5 L 0 10 z');
 
