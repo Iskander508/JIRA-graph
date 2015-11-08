@@ -40,7 +40,7 @@ class GIT:
     def mergeBase(self, id1, id2):
         return self.runGit(['merge-base', self.parseId(id1), self.parseId(id2)])
         
-    def branchDistance(self, olderId, newerId):
+    def getDistance(self, olderId, newerId):
         return self.runGit(['rev-list', '--count', '--left-only', self.parseId(newerId) + '...' + self.parseId(olderId)])
         
     def reset(self, hard=True):
