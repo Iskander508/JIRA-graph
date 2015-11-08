@@ -10,23 +10,44 @@ function makeUniqueId() {
     return text;
 }
 
-function renderGraph(content) {
+function renderGraph(content, options) {
 
     var graph = Viva.Graph.graph();
+
+    var showJIRAissues = (options.indexOf('JIRA') != -1);
+    var showALLissues = (options.indexOf('JIRA-all') != -1);
+    var showPullRequests = (options.indexOf('pull') != -1);
+    var showBranches = (options.indexOf('branches') != -1);
+    var showConflicts = (options.indexOf('conflicts') != -1);
+
+    var nodeIds = new Set();
 
     {
         var node;
         for (node of content.nodes) {
+            if (!showJIRAissues && node.type == 'JIRA') continue;
+            if (!showBranches && node.type == 'git' && node.data.type == 'branch') continue;
+            if (!showPullRequests && node.type == 'stash') continue;
+
             graph.addNode(node.id, node);
+            nodeIds.add(node.id);
         }
     }
     {
         var edge;
         for (edge of content.edges) {
+            if (!nodeIds.has(edge.source) || !nodeIds.has(edge.source)) continue;
             graph.addLink(edge.source, edge.target, edge.type);
         }
     }
 
+    if (options.indexOf('hide-orphans') != -1) {
+        graph.forEachNode(function(node) {
+            if (graph.getLinks(node.id).length == 0) {
+                graph.removeNode(node.id);
+            }
+        });
+    }
 
     var graphics = Viva.Graph.View.svgGraphics();
     graphics.node(function (node) {
@@ -104,9 +125,8 @@ function renderGraph(content) {
                         svgStatus.append(Viva.Graph.svg('title').text('completed: ' + issueData.completed + 'h\nremaining: ' + (issueData.estimated-issueData.completed) + 'h\ntotal: ' + issueData.estimated + 'h'));
                         
                         var svgStatusText = Viva.Graph.svg('text')
-                            .attr('x', statusX)
-                            .attr('y', 35)
-                            .attr('fill', issueData.statusColor)
+                            .attr('x', statusX).attr('y', 32)
+                            .attr('fill', issueData.statusColor).attr('class', 'status')
                             .text(issueData.status + ' (' + issueData.completed + '/' + issueData.estimated + ')');
                         svgStatus.append(svgStatusText);
                         
@@ -118,14 +138,14 @@ function renderGraph(content) {
                             if (completedLength > 0) {
                                 var completedLine = Viva.Graph.svg('line')
                                     .attr('stroke-width', '3').attr('class', 'completed')
-                                    .attr('x1', statusX).attr('y1', 40).attr('x2', statusX + completedLength).attr('y2', 40);
+                                    .attr('x1', statusX).attr('y1', 37).attr('x2', statusX + completedLength).attr('y2', 37);
                                 svgStatus.append(completedLine);
                             }
 
                             if (totalLength - completedLength > 0) {
                                 var incompletedLine = Viva.Graph.svg('line')
                                     .attr('stroke-width', '3').attr('class', 'incompleted')
-                                    .attr('x1', statusX + completedLength).attr('y1', 40).attr('x2', statusX + totalLength).attr('y2', 40);
+                                    .attr('x1', statusX + completedLength).attr('y1', 37).attr('x2', statusX + totalLength).attr('y2', 37);
                                 svgStatus.append(incompletedLine);
                             }
                         }
@@ -279,9 +299,14 @@ function renderGraph(content) {
 
         var source = graph.getNode(path.link.fromId);
         var target = graph.getNode(path.link.toId);
+        
+        var sourceElement = document.getElementById(source.data.id);
+        var targetElement = document.getElementById(target.data.id);
 
-        var sourceRect = document.getElementById(source.data.id).getBoundingClientRect();
-        var targetRect = document.getElementById(target.data.id).getBoundingClientRect();
+        if (!sourceElement || !targetElement) return;
+
+        var sourceRect = sourceElement.getBoundingClientRect();
+        var targetRect = targetElement.getBoundingClientRect();
 
         var sourceWidth = sourceRect.width;
         var sourceHeight = sourceRect.height;

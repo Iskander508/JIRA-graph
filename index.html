@@ -8,18 +8,95 @@
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
     <script type="text/javascript">
         function main() {
+            drawGraph();
+        }
+
+        function drawGraph() {
             $.getJSON("data.json", function (content) {
-                renderGraph(content);
+                $("svg").remove();
+
+                renderGraph(content, getOptions());
 
                 if ('timestamp' in content) {
-                    $('#timestamp').html(content.timestamp);
+                    $('#timestamp').text(content.timestamp);
                 }
             });
+        }
+
+        function getOptions() {
+            var options = [];
+            $('#config-form input').each(function (i, checkbox) {
+                if ($(checkbox).is(':checked') && !$(checkbox).attr("disabled")) {
+                    options.push($(checkbox).attr("value"));
+                }
+            });
+
+            return options;
         }
     </script>
 
 </head>
 <body onload='main()'>
+    <div id="config">
+        <form id="config-form">
+            <input type="checkbox" id="JIRA" name="JIRA" value="JIRA" checked />JIRA issues<br />
+            &nbsp;&nbsp;<input type="checkbox" id="JIRA-all" name="JIRA-all" value="JIRA-all" class="JIRA-all" /><span id="JIRA-all-text">All issues</span><br />
+            <input type="checkbox" id="pull" name="pull" value="pull" checked />Pull-requests<br />
+            <input type="checkbox" id="branches" name="branches" value="branches" checked />Branches<br />
+            &nbsp;&nbsp;<input type="checkbox" id="conflicts" name="conflicts" value="conflicts" class="conflicts" checked /><span id="conflicts-text">Conflicts</span><br />
+            <input type="checkbox" id="hide-orphans" name="hide-orphans" value="hide-orphans" />Hide orphans
+        </form>
+
+        <script type="text/javascript">
+            $(document).ready(function(){
+                var queryString = location.search;
+                if (queryString) {
+                    var index = queryString.indexOf('options=');
+                    if (index != -1) {
+                        var options = queryString.substring(index + 8).split(',');
+
+                        $('#config-form input').each(function (i, checkbox) {
+                            $(checkbox).prop('checked', (options.indexOf($(checkbox).attr("value")) != -1));
+                        });
+                    }
+                }
+                
+
+                $('#JIRA').click(function() {
+                    if ($('#JIRA').is(':checked')) {
+                        $('#JIRA-all').removeAttr("disabled");
+                        $('#JIRA-all-text').removeClass("disabled");
+                    } else {
+                        $('#JIRA-all').attr("disabled", true);
+                        $('#JIRA-all-text').addClass("disabled");
+                    }
+                });
+                $('#branches').click(function () {
+                    if ($('#branches').is(':checked')) {
+                        $('#conflicts').removeAttr("disabled");
+                        $('#conflicts-text').removeClass("disabled");
+                    } else {
+                        $('#conflicts').attr("disabled", true);
+                        $('#conflicts-text').addClass("disabled");
+                    }
+                });
+                $('#config-form input').click(function () {
+                    
+                    var options = "";
+                    for (option of getOptions()) {
+                        if (options.length != 0) {
+                            options += ',';
+                        }
+                        options += option;
+                    }
+
+                    window.history.pushState(null, "Graph", "index.html?options=" + options);
+
+                    drawGraph();
+                });
+            });
+        </script>
+    </div>
     <div id="footer">Data gathered: <span id="timestamp"></span></div>
 </body>
 </html>
