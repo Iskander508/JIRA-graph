@@ -9,15 +9,18 @@ g.git { outline: 2px solid black; }
 g.stash { outline: 2px solid gray; }
 
 g.Task { outline-color: #bfe4ff; }
-g.Task line { stroke: #bfe4ff; }
+g.Task line.issue-type { stroke: #bfe4ff; }
 g.Story { outline-color: #b147ca; }
-g.Story line { stroke: #b147ca; }
+g.Story line.issue-type { stroke: #b147ca; }
 g.Bug { outline-color: #cc0000; }
-g.Bug line { stroke: #cc0000; }
+g.Bug line.issue-type { stroke: #cc0000; }
 g.TestingSubtask { outline-color: #cccb6b; }
-g.TestingSubtask line { stroke: #cccb6b; }
+g.TestingSubtask line.issue-type { stroke: #cccb6b; }
 g.TechnicalSubtask { outline-color: #b3f290; }
-g.TechnicalSubtask line { stroke: #b3f290; }
+g.TechnicalSubtask line.issue-type { stroke: #b3f290; }
+
+g line.completed { stroke: green; }
+g line.incompleted { stroke: orange; }
 
 g text.done { text-decoration: line-through; }
 

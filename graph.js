@@ -47,7 +47,7 @@ function renderGraph(content) {
                     
                     {
                         var nodeLine = Viva.Graph.svg('line')
-                            .attr('stroke-width', '5')
+                            .attr('stroke-width', '5').attr('class', 'issue-type')
                             .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 46);
                         nodeLine.append(Viva.Graph.svg('title').text(issueData.type));
                         svgNode.append(nodeLine);
@@ -101,12 +101,35 @@ function renderGraph(content) {
                     }
 
                     {
-                        var svgStatus = Viva.Graph.svg('text')
+                        var svgStatus = Viva.Graph.svg('g');
+                        svgStatus.append(Viva.Graph.svg('title').text('completed: ' + issueData.completed + 'h\nremaining: ' + (issueData.estimated-issueData.completed) + 'h\ntotal: ' + issueData.estimated + 'h'));
+                        
+                        var svgStatusText = Viva.Graph.svg('text')
                             .attr('x', statusX)
                             .attr('y', 35)
                             .attr('fill', issueData.statusColor)
                             .text(issueData.status + ' (' + issueData.completed + '/' + issueData.estimated + ')');
-                        svgStatus.append(Viva.Graph.svg('title').text('completed: ' + issueData.completed + 'h\ntotal: ' + issueData.estimated + 'h'));
+                        svgStatus.append(svgStatusText);
+                        
+                        if (issueData.estimated != 0) {
+                            var totalLength = issueData.estimated*5;
+                            if (totalLength > 200) totalLength = 200;
+                            var completedLength = totalLength * issueData.completed / issueData.estimated;
+
+                            if (completedLength > 0) {
+                                var completedLine = Viva.Graph.svg('line')
+                                    .attr('stroke-width', '3').attr('class', 'completed')
+                                    .attr('x1', statusX).attr('y1', 40).attr('x2', statusX + completedLength).attr('y2', 40);
+                                svgStatus.append(completedLine);
+                            }
+
+                            if (totalLength - completedLength > 0) {
+                                var incompletedLine = Viva.Graph.svg('line')
+                                    .attr('stroke-width', '3').attr('class', 'incompleted')
+                                    .attr('x1', statusX + completedLength).attr('y1', 40).attr('x2', statusX + totalLength).attr('y2', 40);
+                                svgStatus.append(incompletedLine);
+                            }
+                        }
                         svgNode.append(svgStatus);
                     }
                 }
@@ -191,10 +214,10 @@ function renderGraph(content) {
 
         node.data = svgNode;
         return svgNode;
-    }).placeNode(function (nodeUI, pos) {
+    }).placeNode(function (node, pos) {
         // 'g' element doesn't have convenient (x,y) attributes, instead
         // we have to deal with transforms: http://www.w3.org/TR/SVG/coords.html#SVGGlobalTransformAttribute
-        nodeUI.attr('transform',
+        node.attr('transform',
                     'translate(' +
                           (pos.x) + ',' + (pos.y) +
                     ')');
@@ -261,23 +284,48 @@ function renderGraph(content) {
         var sourceRect = document.getElementById(source.data.id).getBoundingClientRect();
         var targetRect = document.getElementById(target.data.id).getBoundingClientRect();
 
+        var sourceWidth = sourceRect.width;
+        var sourceHeight = sourceRect.height;
+        var targetWidth = targetRect.width;
+        var targetHeight = targetRect.height;
+
+        var transformList = path.parentElement.transform.animVal;
+        if (transformList.numberOfItems > 0) {
+            var transform = transformList.getItem(0);
+            switch(transform.type) {
+                case SVGTransform.SVG_TRANSFORM_MATRIX:
+                case SVGTransform.SVG_TRANSFORM_SCALE:
+                    {
+                        var scaleX = transform.matrix.a;
+                        var scaleY = transform.matrix.d;
+
+                        sourceWidth /= scaleX;
+                        sourceHeight /= scaleY;
+                        targetWidth /= scaleX;
+                        targetHeight /= scaleY;
+                    }
+                    break;
+            }
+        }
+
+
         // For rectangular nodes Viva.Graph.geom() provides efficient way to find
         // an intersection point between segment and rectangle
         var fromMiddle = {
-            'x': fromPos.x + sourceRect.width / 2,
-            'y': fromPos.y + sourceRect.height / 2
+            'x': fromPos.x + sourceWidth / 2,
+            'y': fromPos.y + sourceHeight / 2
         };
         var toMiddle = {
-            'x': toPos.x + targetRect.width / 2,
-            'y': toPos.y + targetRect.height / 2
+            'x': toPos.x + targetWidth / 2,
+            'y': toPos.y + targetHeight / 2
         };
 
         var from = geom.intersectRect(
                 // rectangle:
                         fromPos.x, // left
                         fromPos.y, // top
-                        fromPos.x + sourceRect.width, // right
-                        fromPos.y + sourceRect.height, // bottom
+                        fromPos.x + sourceWidth, // right
+                        fromPos.y + sourceHeight, // bottom
                 // segment:
                         fromMiddle.x, fromMiddle.y, toMiddle.x, toMiddle.y)
                    || fromMiddle; // if no intersection found - return center of the node
@@ -286,14 +334,16 @@ function renderGraph(content) {
                 // rectangle:
                         toPos.x, // left
                         toPos.y, // top
-                        toPos.x + targetRect.width, // right
-                        toPos.y + targetRect.height, // bottom
+                        toPos.x + targetWidth, // right
+                        toPos.y + targetHeight, // bottom
                 // segment:
                         fromMiddle.x, fromMiddle.y, toMiddle.x, toMiddle.y)
                     || toMiddle; // if no intersection found - return center of the node
 
         var data = 'M' + from.x + ',' + from.y +
                    'L' + to.x + ',' + to.y;
+
+        path.attr("d", data);
 
         if (path.link.data) {
             if (!path.label) {
@@ -305,8 +355,6 @@ function renderGraph(content) {
 
             path.label.attr('x', (from.x + to.x) / 2).attr('y', (from.y + to.y) / 2);
         }
-
-        path.attr("d", data);
     });
 
 
