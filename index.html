@@ -39,12 +39,13 @@
 <body onload='main()'>
     <div id="config">
         <form id="config-form">
-            <input type="checkbox" id="JIRA" name="JIRA" value="JIRA" checked />JIRA issues<br />
-            &nbsp;&nbsp;<input type="checkbox" id="JIRA-all" name="JIRA-all" value="JIRA-all" class="JIRA-all" /><span id="JIRA-all-text">All issues</span><br />
-            <input type="checkbox" id="pull" name="pull" value="pull" checked />Pull-requests<br />
-            <input type="checkbox" id="branches" name="branches" value="branches" checked />Branches<br />
-            &nbsp;&nbsp;<input type="checkbox" id="conflicts" name="conflicts" value="conflicts" class="conflicts" checked /><span id="conflicts-text">Conflicts</span><br />
-            <input type="checkbox" id="hide-orphans" name="hide-orphans" value="hide-orphans" />Hide orphans
+            <span title="Show JIRA issues"><input type="checkbox" id="JIRA" name="JIRA" value="JIRA" checked />JIRA issues</span><br />
+            &nbsp;&nbsp;<span title="Show done tasks and subtasks"><input type="checkbox" id="JIRA-all" name="JIRA-all" value="JIRA-all" class="JIRA-all" /><span id="JIRA-all-text">All issues</span></span><br />
+            <span title="Show branch pull-requests"><input type="checkbox" id="pull" name="pull" value="pull" checked />Pull-requests</span><br />
+            <span title="Show Development branches"><input type="checkbox" id="branches" name="branches" value="branches" checked />Branches</span><br />
+            &nbsp;&nbsp;<span title="Show branches merged in master branch"><input type="checkbox" id="merged" name="merged" value="merged" class="merged" /><span id="merged-text">Merged</span></span><br />
+            &nbsp;&nbsp;<span title="Show merge conflicts"><input type="checkbox" id="conflicts" name="conflicts" value="conflicts" class="conflicts" checked /><span id="conflicts-text">Conflicts</span></span><br />
+            <span title="Hide nodes with no connections"><input type="checkbox" id="hide-orphans" name="hide-orphans" value="hide-orphans" />Hide orphans</span>
         </form>
 
         <script type="text/javascript">
@@ -73,9 +74,13 @@
                 });
                 $('#branches').click(function () {
                     if ($('#branches').is(':checked')) {
+                        $('#merged').removeAttr("disabled");
+                        $('#merged-text').removeClass("disabled");
                         $('#conflicts').removeAttr("disabled");
                         $('#conflicts-text').removeClass("disabled");
                     } else {
+                        $('#merged').attr("disabled", true);
+                        $('#merged-text').addClass("disabled");
                         $('#conflicts').attr("disabled", true);
                         $('#conflicts-text').addClass("disabled");
                     }

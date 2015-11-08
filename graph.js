@@ -18,6 +18,7 @@ function renderGraph(content, options) {
     var showALLissues = (options.indexOf('JIRA-all') != -1);
     var showPullRequests = (options.indexOf('pull') != -1);
     var showBranches = (options.indexOf('branches') != -1);
+    var showMergedBranches = (options.indexOf('merged') != -1);
     var showConflicts = (options.indexOf('conflicts') != -1);
 
     var nodeIds = new Set();
@@ -26,7 +27,7 @@ function renderGraph(content, options) {
         var node;
         for (node of content.nodes) {
             if (!showJIRAissues && node.type == 'JIRA') continue;
-            if (!showBranches && node.type == 'git' && node.data.type == 'branch') continue;
+            if (!showBranches && node.type == 'git') continue;
             if (!showPullRequests && node.type == 'stash') continue;
 
             graph.addNode(node.id, node);
