@@ -22,6 +22,9 @@ class Logic:
                                 'git': {
                                     'repository': 'C:\\git',
                                     'repositoryName': 'avg'
+                                    },
+                                'stash': {
+                                    'url': 'https://stash.atlassian.com/commit/'
                                     }
                               }):
         self.jira = jira.JIRA(url=config['jira']['url'], auth=config['jira']['auth'])
@@ -49,7 +52,8 @@ class Logic:
         
         for branch in self.calculateBranches(branches):
             branch.update({'type': 'branch' if (len(branch['branchNames']) != 0) else 'commit'})
-            # TODO Add stash URL
+            branch.update({'URL': self.config['stash']['url'] + branch['id'] })
+
             nodeId = self.getGitNodeId(branch['id'])
             g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, branch))
             for successor in branch['successors']:
