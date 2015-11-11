@@ -32,24 +32,22 @@ function renderGraph(content, options) {
 
     var nodeIds = new Set();
 
-    {
-        var node;
-        for (node of content.nodes) {
-            if (!showJIRAissues && node.type == 'JIRA') continue;
-            if (!showBranches && node.type == 'git') continue;
-            if (!showMergedBranches && node.type == 'git' && node.data.inMaster && !node.data.mergeBase) continue;
-            if (!showPullRequests && node.type == 'stash') continue;
+    
+    for (var index = 0; index < content.nodes.length; index++) {
+        var node = content.nodes[index];
+        if (!showJIRAissues && node.type == 'JIRA') continue;
+        if (!showBranches && node.type == 'git') continue;
+        if (!showMergedBranches && node.type == 'git' && node.data.inMaster && !node.data.mergeBase) continue;
+        if (!showPullRequests && node.type == 'stash') continue;
 
-            graph.addNode(node.id, node);
-            nodeIds.add(node.id);
-        }
+        graph.addNode(node.id, node);
+        nodeIds.add(node.id);
     }
-    {
-        var edge;
-        for (edge of content.edges) {
-            if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue;
-            graph.addLink(edge.source, edge.target, edge.type);
-        }
+    
+    for (var index = 0; index < content.edges.length; index++) {
+        var edge = content.edges[index];
+        if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue;
+        graph.addLink(edge.source, edge.target, edge.type);
     }
 
     if (!showALLissues) {
@@ -93,8 +91,6 @@ function renderGraph(content, options) {
         graph.forEachNode(function(node) {
             if (isInactiveIssue(node, graph, 0)) {
                 nodeIdsToRemove.add(node.id);
-            } else {
-                console.log('');
             }
         });
 
@@ -175,6 +171,12 @@ function renderGraph(content, options) {
             classes += ' ' + node.data.data.type;
         }
         svgNode.attr('class', classes);
+        
+        {
+            var nodeRect = Viva.Graph.svg('rect').attr('class', 'boundary');
+            svgNode.append(nodeRect);
+            svgNode["boundary"] = nodeRect;
+        }
 
         switch (node.data.type) {
             case 'JIRA':
@@ -307,9 +309,10 @@ function renderGraph(content, options) {
                                 .text(gitData.id.substring(0,10));
                             svgTitle.append(svgText);
                         } else {
-                            var branchName;
+                            
                             var startY = 15;
-                            for (branchName of gitData.branchNames) {
+                            for (var index = 0; index < gitData.branchNames.length; index++) {
+                                var branchName = gitData.branchNames[index];
                                 var svgText = Viva.Graph.svg('text')
                                 .attr('x', 20).attr('y', startY)
                                 .text(branchName);
@@ -410,6 +413,9 @@ function renderGraph(content, options) {
                     'translate(' +
                           (pos.x) + ',' + (pos.y) +
                     ')');
+                    
+        var bbox = node.getBBox();
+        node.boundary.attr('x', bbox.x).attr('y', bbox.y).attr('width', bbox.width).attr('height', bbox.height);
     });
 
 
@@ -478,8 +484,8 @@ function renderGraph(content, options) {
         var sourceHeight = sourceRect.height;
         var targetWidth = targetRect.width;
         var targetHeight = targetRect.height;
-
-        var transformList = path.parentElement.transform.animVal;
+        
+        var transformList = path.parentNode.transform.animVal;
         if (transformList.numberOfItems > 0) {
             var transform = transformList.getItem(0);
             switch(transform.type) {
@@ -530,8 +536,8 @@ function renderGraph(content, options) {
                         fromMiddle.x, fromMiddle.y, toMiddle.x, toMiddle.y)
                     || toMiddle; // if no intersection found - return center of the node
 
-        var data = 'M' + from.x + ',' + from.y +
-                   'L' + to.x + ',' + to.y;
+        var data = 'M ' + from.x + ' ' + from.y +
+                   ' L ' + to.x + ' ' + to.y;
 
         path.attr("d", data);
 
@@ -539,12 +545,18 @@ function renderGraph(content, options) {
             if (!path.label) {
                 var svgText = Viva.Graph.svg('text').text(path.link.data);
                 svgText.attr('font-size', 9);
-                path.parentElement.append(svgText);
+                path.parentNode.append(svgText);
                 path["label"] = svgText;
             }
 
             path.label.attr('x', (from.x + to.x) / 2).attr('y', (from.y + to.y) / 2);
         }
+        
+        //if (isIE) {
+            var parent = path.parentNode;
+            parent.removeChild(path);
+            parent.appendChild(path);
+        //}
     });
 
 

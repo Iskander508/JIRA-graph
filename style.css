@@ -18,19 +18,20 @@ html, body, svg { width: 99%; height: 99%; }
 
 span.disabled { color: gray; }
 
-g.JIRA { outline: 1px solid black; }
-g.git { outline: 2px solid black; }
-g.stash { outline: 2px solid gray; }
+rect.boundary  { fill: transparent; stroke-linecap="square" }
+g.JIRA rect.boundary { stroke:black; stroke-width:1; }
+g.git rect.boundary { stroke:black; stroke-width:2; }
+g.stash rect.boundary { stroke:gray; stroke-width:1; }
 
-g.Task { outline-color: #bfe4ff; }
+g.Task rect.boundary { stroke: #bfe4ff; }
 g.Task line.issue-type { stroke: #bfe4ff; }
-g.Story { outline-color: #b147ca; }
+g.Story rect.boundary{ stroke: #b147ca; }
 g.Story line.issue-type { stroke: #b147ca; }
-g.Bug { outline-color: #cc0000; }
+g.Bug rect.boundary { stroke: #cc0000; }
 g.Bug line.issue-type { stroke: #cc0000; }
-g.TestingSubtask { outline-color: #cccb6b; }
+g.TestingSubtask rect.boundary { stroke: #cccb6b; }
 g.TestingSubtask line.issue-type { stroke: #cccb6b; }
-g.TechnicalSubtask { outline-color: #b3f290; }
+g.TechnicalSubtask rect.boundary { stroke: #b3f290; }
 g.TechnicalSubtask line.issue-type { stroke: #b3f290; }
 
 g line.completed { stroke: green; }
@@ -39,14 +40,14 @@ g line.incompleted { stroke: orange; }
 g text.done { text-decoration: line-through; }
 g text.status { font-size: 12px; }
 
-g.commit { outline-color: lightgray; }
-g.branch { outline-color: orange; }
+g.commit rect.boundary { stroke: lightgray; }
+g.branch rect.boundary { stroke: orange; }
 g.commit text { fill: gray; }
 g.master text.master { fill: red; }
 
-g.highlight-level-1 { outline-width: 2px; }
-g.highlight-level-2 { outline-width: 3px; }
-g.highlight-level-3 { outline-width: 4px; }
+g.highlight-level-1 rect.boundary { stroke-width:2; }
+g.highlight-level-2 rect.boundary { stroke-width:3; }
+g.highlight-level-3 rect.boundary{ stroke-width:4; }
 
 
 

@@ -16,14 +16,20 @@
         }
 
         function drawGraph() {
-            $.getJSON("data.json", function (content) {
-                $("svg").remove();
+            $.ajax({
+                url: "data.json",
+                cache: false,
+                dataType: "json",
+                success: function(content) {
+                    $("svg").remove();
 
-                renderGraph(content, getOptions());
+                    renderGraph(content, getOptions());
 
-                if ('timestamp' in content) {
-                    $('#timestamp').text(content.timestamp);
-                }
+                    if ('timestamp' in content) {
+                        $('#timestamp').text(content.timestamp);
+                    }
+                },
+                error: function (request, status, error) { alert(status + ", " + error); }
             });
         }
 
@@ -94,11 +100,12 @@
                 $('#config-form input').click(function () {
                     
                     var options = "";
-                    for (option of getOptions()) {
+                    var opts = getOptions();
+                    for (var index = 0; index < opts.length; index++) {
                         if (options.length != 0) {
                             options += ',';
                         }
-                        options += option;
+                        options += opts[index];
                     }
 
                     window.history.pushState(null, "Active tasks", "index.html?options=" + options);
