@@ -186,7 +186,7 @@ function renderGraph(content, options) {
                     {
                         var nodeLine = Viva.Graph.svg('line')
                             .attr('stroke-width', '5').attr('class', 'issue-type')
-                            .attr('x1', 0).attr('y1', 0).attr('x2', 0).attr('y2', 46);
+                            .attr('x1', 2).attr('y1', 0).attr('x2', 2).attr('y2', 46);
                         nodeLine.append(Viva.Graph.svg('title').text(issueData.type));
                         svgNode.append(nodeLine);
                     }
@@ -198,7 +198,7 @@ function renderGraph(content, options) {
                         svgTitle.append(Viva.Graph.svg('title').text(issueData.code + ': ' + issueData.summary));
 
                         var svgText = Viva.Graph.svg('text')
-                            .attr('x', 5)
+                            .attr('x', 7)
                             .attr('y', 15)
                             .text(issueData.code + ': ' + issueData.summary);
 
@@ -213,13 +213,13 @@ function renderGraph(content, options) {
                         var svgImage = Viva.Graph.svg('image')
                            .attr('width', 24)
                            .attr('height', 24)
-                           .attr('x', 5).attr('y', 20)
+                           .attr('x', 7).attr('y', 20)
                            .link(issueData.assigneeImage);
                         svgImage.append(Viva.Graph.svg('title').text(issueData.assignee));
                         svgNode.append(svgImage);
                     }
 
-                    var statusX = 35;
+                    var statusX = 37;
                     if (issueData.epic) {
                         var svgRect = Viva.Graph.svg('rect')
                             .attr('x', statusX)
@@ -415,7 +415,7 @@ function renderGraph(content, options) {
                     ')');
                     
         var bbox = node.getBBox();
-        node.boundary.attr('x', bbox.x).attr('y', bbox.y).attr('width', bbox.width).attr('height', bbox.height);
+        node.boundary.attr('x', 0).attr('y', bbox.y).attr('width', bbox.width).attr('height', bbox.height);
     });
 
 
