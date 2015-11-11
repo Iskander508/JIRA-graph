@@ -112,6 +112,49 @@ function renderGraph(content, options) {
     }
 
     var graphics = Viva.Graph.View.svgGraphics();
+
+    var setClass = function(svgObject, className, isOn) {
+        var curClass = svgObject.attr("class");
+        var curClasses = curClass ? curClass.split(' ') : [];
+        var index = curClasses.indexOf(className);
+        var hasClass = (index != -1);
+
+        if (hasClass == isOn) return;
+
+        if (isOn) {
+            curClasses.push(className);
+        } else {
+            curClasses.splice(index, 1);
+        }
+        svgObject.attr("class", curClasses.join(' '));
+    };
+
+    var highlightCommits = function(nodeId, isOn, successors) {
+        graph.forEachLinkedNode(nodeId, function(otherNode, link){
+            if (otherNode.id == (successors ? link.fromId : link.toId)) return; // only derived commits
+
+            var linkUI = graphics.getLinkUI(link.id);
+            if (linkUI) {
+                if (otherNode.data.type == 'git') {
+                    setClass(linkUI, successors ? "highlight-successor" : "highlight-predecessor", isOn);
+                    highlightCommits(otherNode.id, isOn, successors);
+                }
+            }
+        });
+    };
+
+    var highlightPullRequest = function(nodeId, isOn) {
+        graph.forEachLinkedNode(nodeId, function(otherNode, link){
+            var linkUI = graphics.getLinkUI(link.id);
+            if (linkUI) {
+                if (otherNode.data.type == 'git') {
+                    var successor = (otherNode.id == link.toId);
+                    setClass(linkUI, successor ? "highlight-successor" : "highlight-predecessor", isOn);
+                }
+            }
+        });
+    };
+
     graphics.node(function (node) {
 
         var svgNode = Viva.Graph.svg('g');
@@ -262,13 +305,21 @@ function renderGraph(content, options) {
                                 startY += 15;
                             }
                         }
-                        
+
                         svgNode.append(svgTitle);
                     }
 
                     if (gitData.master) {
                         svgNode.attr('class', svgNode.attr('class') + ' master');
                     }
+
+                    $(svgNode).hover(function() { // mouse over
+                        highlightCommits(node.id, true, true);
+                        highlightCommits(node.id, true, false);
+                    }, function() { // mouse out
+                        highlightCommits(node.id, false, true);
+                        highlightCommits(node.id, false, false);
+                    });
                 }
                 break;
             case 'stash':
@@ -323,11 +374,17 @@ function renderGraph(content, options) {
                         }
                         svgNode.append(svgTitle);
                     }
+
+                    $(svgNode).hover(function() { // mouse over
+                        highlightPullRequest(node.id, true);
+                    }, function() { // mouse out
+                        highlightPullRequest(node.id, false);
+                    });
                 }
                 break;
         }
 
-        node.data = svgNode;
+        node["svg"] = svgNode;
         return svgNode;
     }).placeNode(function (node, pos) {
         // 'g' element doesn't have convenient (x,y) attributes, instead
@@ -396,8 +453,8 @@ function renderGraph(content, options) {
         var source = graph.getNode(path.link.fromId);
         var target = graph.getNode(path.link.toId);
         
-        var sourceElement = document.getElementById(source.data.id);
-        var targetElement = document.getElementById(target.data.id);
+        var sourceElement = document.getElementById(source.svg.id);
+        var targetElement = document.getElementById(target.svg.id);
 
         if (!sourceElement || !targetElement) return;
 
