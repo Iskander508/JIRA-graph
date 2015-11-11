@@ -52,14 +52,6 @@ function renderGraph(content, options) {
         }
     }
 
-    if (hideOrphans) {
-        graph.forEachNode(function(node) {
-            if (graph.getLinks(node.id).length == 0) {
-                graph.removeNode(node.id);
-            }
-        });
-    }
-
     if (!showALLissues) {
         var nodeIdsToRemove = new Set();
 
@@ -108,6 +100,14 @@ function renderGraph(content, options) {
 
         nodeIdsToRemove.forEach(function(nodeId) {
             graph.removeNode(nodeId);
+        });
+    }
+
+    if (hideOrphans) {
+        graph.forEachNode(function(node) {
+            if (graph.getLinks(node.id).length == 0) {
+                graph.removeNode(node.id);
+            }
         });
     }
 
