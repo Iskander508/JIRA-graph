@@ -60,6 +60,57 @@ function renderGraph(content, options) {
         });
     }
 
+    if (!showALLissues) {
+        var nodeIdsToRemove = new Set();
+
+        var isInactiveIssue = function(node, graph, level) {
+            if (level > 20) return false;
+            if (node.data.type != 'JIRA') return false;
+
+            var issueData = node.data.data;
+            if (!issueIsDone(issueData) && !issueIsOpen(issueData)) return false;
+            if ('pullRequests' in issueData) {
+                var inactive = true;
+                issueData.pullRequests.forEach(function(pullRequest) {
+                    if (pullRequest.status == 'OPEN') inactive = false;
+                });
+                if (!inactive) return false;
+            }
+            if ('branches' in issueData || 'subtasks' in issueData) {
+                var inactive = true;
+                graph.getLinks(node.id).forEach(function(link) {
+                    var target = graph.getNode(link.toId);
+                    switch (target.data.type) {
+                        case 'JIRA':
+                            if (isInactiveIssue(target, graph, level+1)) {
+                                inactive = false;
+                            }
+                            break;
+                        case 'git':
+                            if (!target.data.data.inMaster && !target.data.data.master) {
+                                inactive = false;
+                            }
+                            break;
+                    }
+                });
+                if (!inactive) return false;
+            }
+            return true;
+        };
+
+        graph.forEachNode(function(node) {
+            if (isInactiveIssue(node, graph, 0)) {
+                nodeIdsToRemove.add(node.id);
+            } else {
+                console.log('');
+            }
+        });
+
+        nodeIdsToRemove.forEach(function(nodeId) {
+            graph.removeNode(nodeId);
+        });
+    }
+
     var graphics = Viva.Graph.View.svgGraphics();
     graphics.node(function (node) {
 
