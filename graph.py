@@ -6,6 +6,28 @@ import json
 def enum(**enums):
     return type('Enum', (), enums)
     
+def setToList(object):
+    if type(object) is list:
+        result = []
+        for item in object:
+            result.append(setToList(item))
+        return result
+        
+    if type(object) is dict:
+        result = {}
+        for key, value in object.items():
+            result[key] = setToList(value)
+        return result
+        
+    if type(object) is set:
+        result = []
+        for value in object:
+            result.append(setToList(value))
+        return result
+        
+    return object
+        
+    
 class GraphError(Exception):
     def __init__(self, value):
         self.value = value
@@ -50,7 +72,7 @@ class Node:
         return {
             'id': self.id,
             'type': self._type,
-            'data': self.data
+            'data': setToList(self.data)
             }
 
 class Edge:
@@ -68,7 +90,7 @@ class Edge:
             'target': self.target
             }
         if self._type:
-            object['type'] = self._type
+            object['type'] = setToList(self._type)
         return object
         
 class Graph:
@@ -97,12 +119,11 @@ class Graph:
         
     def saveGraphJson(self, filePath, additionalData=None):
         import datetime
-        import codecs
         
         output = {
             'nodes': [],
             'edges': [],
-            'timestamp': str(datetime.datetime.now())
+            'timestamp': datetime.datetime.now().strftime('%d.%m.%Y %X')
             }
             
         if additionalData:
@@ -116,5 +137,5 @@ class Graph:
             if (edge.source in self.nodeIds) and (edge.target in self.nodeIds):
                 output['edges'].append(edge.toObject())
                 
-        with codecs.open(filePath, 'w', "utf-8-sig") as outfile:
-            outfile.write(json.dumps(output, indent=4, ensure_ascii=False))
+        with open(filePath, 'w') as outfile:
+            outfile.write(json.dumps(output, indent=4, ensure_ascii=False).encode('utf-8'))

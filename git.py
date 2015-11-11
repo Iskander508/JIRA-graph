@@ -63,7 +63,6 @@ class GIT:
     def getBranches(self, id, remoteOnly=True):
         branches = []
         refListStr = self.runGit(['log', '--format="%d"', '--max-count=1', id])
-        print(refListStr)
         refList = refListStr.strip('"').strip().lstrip('(').rstrip(')').split(', ')
         for item in refList:
             if not 'tag:' in item:

@@ -10,6 +10,14 @@ function makeUniqueId() {
     return text;
 }
 
+function issueIsDone(issueData) {
+    return 'done' in issueData && issueData.done || issueData.status == 'Done';
+}
+
+function issueIsOpen(issueData) {
+    return issueData.status == 'Open';
+}
+
 function renderGraph(content, options) {
 
     var graph = Viva.Graph.graph();
@@ -20,6 +28,7 @@ function renderGraph(content, options) {
     var showBranches = (options.indexOf('branches') != -1);
     var showMergedBranches = (options.indexOf('merged') != -1);
     var showConflicts = (options.indexOf('conflicts') != -1);
+    var hideOrphans = (options.indexOf('hide-orphans') != -1);
 
     var nodeIds = new Set();
 
@@ -28,6 +37,7 @@ function renderGraph(content, options) {
         for (node of content.nodes) {
             if (!showJIRAissues && node.type == 'JIRA') continue;
             if (!showBranches && node.type == 'git') continue;
+            if (!showMergedBranches && node.type == 'git' && node.data.inMaster && !node.data.mergeBase) continue;
             if (!showPullRequests && node.type == 'stash') continue;
 
             graph.addNode(node.id, node);
@@ -37,12 +47,12 @@ function renderGraph(content, options) {
     {
         var edge;
         for (edge of content.edges) {
-            if (!nodeIds.has(edge.source) || !nodeIds.has(edge.source)) continue;
+            if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue;
             graph.addLink(edge.source, edge.target, edge.type);
         }
     }
 
-    if (options.indexOf('hide-orphans') != -1) {
+    if (hideOrphans) {
         graph.forEachNode(function(node) {
             if (graph.getLinks(node.id).length == 0) {
                 graph.removeNode(node.id);
@@ -83,8 +93,11 @@ function renderGraph(content, options) {
                         var svgText = Viva.Graph.svg('text')
                             .attr('x', 5)
                             .attr('y', 15)
-                            .text(issueData.code + ': ' + issueData.summary)
-                            .attr('class', ('done' in issueData && issueData.done || issueData.status == 'Done') ? 'done' : '');
+                            .text(issueData.code + ': ' + issueData.summary);
+
+                        if (issueIsDone(issueData)) {
+                            svgText.attr('class', 'done');
+                        }
                         svgTitle.append(svgText);
                         svgNode.append(svgTitle);
                     }
@@ -162,25 +175,43 @@ function renderGraph(content, options) {
                         var svgTitle = Viva.Graph.svg('a');
                         svgTitle.link(gitData.URL);
                         svgTitle.attr('target', '_blank');
-
+                        var isBranch = (gitData.type == 'branch');
 
                         {
                             var svgImage = Viva.Graph.svg('image')
                                .attr('width', 15)
                                .attr('height', 15)
                                .attr('x', 2).attr('y', 2)
-                               .link((gitData.type == 'branch') ? 'branch.svg' : 'git.png');
-                            if (gitData.type == 'branch') {
+                               .link(isBranch ? 'branch.svg' : 'git.png');
+                            if (isBranch) {
                                 svgImage.append(Viva.Graph.svg('title').text(gitData.master ? 'master branch' : 'branch'));
                             }
                             svgNode.append(svgImage);
                         }
 
-                        var svgText = Viva.Graph.svg('text')
-                            .attr('x', 20)
-                            .attr('y', 15)
-                            .text(gitData.name);
-                        svgTitle.append(svgText);
+                        if (!isBranch) {
+                            var svgText = Viva.Graph.svg('text')
+                                .attr('x', 20)
+                                .attr('y', 15)
+                                .text(gitData.id.substring(0,10));
+                            svgTitle.append(svgText);
+                        } else {
+                            var branchName;
+                            var startY = 15;
+                            for (branchName of gitData.branchNames) {
+                                var svgText = Viva.Graph.svg('text')
+                                .attr('x', 20).attr('y', startY)
+                                .text(branchName);
+
+                                if (content.masterBranches.indexOf(branchName) != -1) {
+                                    svgText.attr('class', 'master');
+                                }
+
+                                svgTitle.append(svgText);
+                                startY += 15;
+                            }
+                        }
+                        
                         svgNode.append(svgTitle);
                     }
 

@@ -106,7 +106,7 @@ class Logic:
                                 
                         g.addEdge(graph.Edge(self.getIssueNodeId(id), pullRequestId))
                         
-        g.saveGraphJson(filePath)
+        g.saveGraphJson(filePath, {'masterBranches': masterBranches})
         
     def calculateBranches(self, branches):
         gitRepository = git.GIT(self.config['git']['repository'])
@@ -122,7 +122,7 @@ class Logic:
             g.add(remoteName)
             if master:
                 masterIds.add(gitRepository.revParse(remoteName))
-          
+      
         result = []
         for id in g.getIds():
             branchNames = []
@@ -130,19 +130,30 @@ class Logic:
             for branch in gitRepository.getBranches(id):
                 branchNames.append(branch.name)
             
-            inMaster = (not masterBranch
-                        and g.getPredecessors(id, direct=False).isdisjoint(masterIds)
-                        and not g.getSuccessors(id, direct=False).isdisjoint(masterIds)
+            inMaster = ((not masterBranch)
+                        and (g.getPredecessors(id, direct=False).isdisjoint(masterIds))
+                        and (not g.getSuccessors(id, direct=False).isdisjoint(masterIds))
                         )
-            
+
             result.append({
                             'id': id,
                             'master': masterBranch,
                             'branchNames': branchNames,
                             'inMaster': inMaster,
+                            'mergeBase': False,
                             'successors': g.getSuccessors(id)
                         })
                         
+        # mark nodes connecting master and non-master paths
+        for node in result:
+            if node['inMaster']:
+                for sId in node['successors']:
+                    if not node['mergeBase']:
+                        for S in result:
+                            if S['id'] == sId and (not S['inMaster']) and (not S['master']):
+                                node['mergeBase'] = True
+                                break
+                                
         return result
         
     def parseActiveSprintIssues(self, jiraProjectId):

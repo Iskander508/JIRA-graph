@@ -37,9 +37,9 @@ class GitGraph:
             return self.predecessors[id]
         else:
             directPredecessors = self.predecessors[id]
-            predecessors = directPredecessors
+            predecessors = copy.deepcopy(directPredecessors)
             for P in directPredecessors:
-                predecessors.union(self.getPredecessors(P, direct))
+                predecessors.update(self.getPredecessors(P, False))
              
             return predecessors
         
@@ -51,9 +51,9 @@ class GitGraph:
             return self.successors[id]
         else:
             directSuccessors = self.successors[id]
-            successors = directSuccessors
+            successors = copy.deepcopy(directSuccessors)
             for S in directSuccessors:
-                successors.union(self.getSuccessors(S, direct))
+                successors.update(self.getSuccessors(S, False))
              
             return successors
         

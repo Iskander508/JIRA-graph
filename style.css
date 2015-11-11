@@ -39,10 +39,10 @@ g line.incompleted { stroke: orange; }
 g text.done { text-decoration: line-through; }
 g text.status { font-size: 12px; }
 
-g.commit { outline-color: gray; }
+g.commit { outline-color: lightgray; }
 g.branch { outline-color: orange; }
 g.commit text { fill: gray; }
-g.master text { fill: red; }
+g.master text.master { fill: red; }
 
 
 rect.ghx-label-0 {fill:#fff;stroke:#707070;}
