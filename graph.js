@@ -174,6 +174,7 @@ function renderGraph(content, options) {
         
         {
             var nodeRect = Viva.Graph.svg('rect').attr('class', 'boundary');
+            nodeRect["layout"] = false;
             svgNode.append(nodeRect);
             svgNode["boundary"] = nodeRect;
         }
@@ -414,8 +415,11 @@ function renderGraph(content, options) {
                           (pos.x) + ',' + (pos.y) +
                     ')');
                     
-        var bbox = node.getBBox();
-        node.boundary.attr('x', 0).attr('y', bbox.y).attr('width', bbox.width).attr('height', bbox.height);
+        if (!node.boundary.layout) {
+            node.boundary.layout = true;
+            var bbox = node.getBBox();
+            node.boundary.attr('x', 0).attr('y', bbox.y).attr('width', bbox.width + 5).attr('height', bbox.height);
+        }
     });
 
 
