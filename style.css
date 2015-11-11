@@ -44,6 +44,15 @@ g.branch { outline-color: orange; }
 g.commit text { fill: gray; }
 g.master text.master { fill: red; }
 
+g.highlight-level-1 { outline-width: 2px; }
+g.highlight-level-2 { outline-width: 3px; }
+g.highlight-level-3 { outline-width: 4px; }
+
+
+
+path { stroke: gray; }
+path.blocks { stroke: red; }
+path.depends { stroke: brown; }
 
 path.highlight-successor { stroke: green; stroke-width: 2; }
 path.highlight-predecessor { stroke: blue; stroke-width: 2; }

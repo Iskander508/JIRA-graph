@@ -155,6 +155,17 @@ function renderGraph(content, options) {
         });
     };
 
+    var highlightIssue = function(node, isOn, level) {
+        if (level == 0) return;
+
+        setClass(node.svg, "highlight-level-" + level, isOn);
+        if (node.data.type == 'JIRA') {
+            graph.forEachLinkedNode(node.id, function(otherNode, link){
+                highlightIssue(otherNode, isOn, level - 1);
+            });
+        }
+    };
+
     graphics.node(function (node) {
 
         var svgNode = Viva.Graph.svg('g');
@@ -259,6 +270,12 @@ function renderGraph(content, options) {
                         }
                         svgNode.append(svgStatus);
                     }
+
+                    $(svgNode).hover(function() { // mouse over
+                        highlightIssue(node, true, 3);
+                    }, function() { // mouse out
+                        highlightIssue(node, false, 3);
+                    });
                 }
                 break;
             case 'git':
@@ -431,15 +448,11 @@ function renderGraph(content, options) {
 
 
     graphics.link(function (link) {
-        // Notice the Triangle marker-end attribe:
         var path = Viva.Graph.svg('path');
 
-        switch (link.data) {
-            case 'blocks': path.attr('stroke', 'red'); break;
-            case 'depends': path.attr('stroke', 'brown'); break;
-            default: path.attr('stroke', 'gray'); break;
+        if (link.data) {
+            path.attr('class', link.data);
         }
-        path.attr('fill', 'gray');
 
         if (link.data != 'links') {
             path.attr('marker-end', 'url(#Triangle)');
