@@ -63,7 +63,8 @@ class GitGraph:
     def add(self, gitId):
         A = self.git.revParse(gitId)
         if self.has(A):
-            raise self.Error('Item(' + gitId +') already added: ' + A)
+            print('Item(' + gitId +') already added: ' + A)
+            return
 
         # fill successors and predecessors
         successors = set()

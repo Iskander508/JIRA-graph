@@ -30,7 +30,7 @@ class Logic:
         self.jira = jira.JIRA(url=config['jira']['url'], auth=config['jira']['auth'])
         self.config = config
         
-    def createGraph(self, jiraProjectId, filePath, masterBranches=[]):
+    def createGraph(self, jiraProjectId, filePath, masterBranches=[], additionalBranches=[]):
         
         issues = self.parseActiveSprintIssues(jiraProjectId)
         
@@ -43,6 +43,9 @@ class Logic:
                     if branch['repository'] == self.config['git']['repositoryName']:
                         branches[branch['name']] = False
         
+        for branch in additionalBranches:
+            branches[branch] = False
+            
         for branch in masterBranches:
             branches[branch] = True
             
