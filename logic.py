@@ -56,6 +56,7 @@ class Logic:
         for branch in self.calculateBranches(branches):
             branch.update({'type': 'branch' if (len(branch['branchNames']) != 0) else 'commit'})
             branch.update({'URL': self.config['stash']['url'] + branch['id'] })
+            branch.update({'info': gitRepository.getInfo(branch['id']) })
 
             nodeId = self.getGitNodeId(branch['id'])
             g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, branch))

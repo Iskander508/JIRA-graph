@@ -290,6 +290,10 @@ function renderGraph(content, options) {
                         svgTitle.link(gitData.URL);
                         svgTitle.attr('target', '_blank');
                         var isBranch = (gitData.type == 'branch');
+                        
+                        if (gitData.info) {
+                            svgTitle.append(Viva.Graph.svg('title').text(gitData.info));
+                        }
 
                         {
                             var svgImage = Viva.Graph.svg('image')
@@ -569,8 +573,8 @@ function renderGraph(content, options) {
         springLength: 150,
         springCoeff: 0.00005,
         //dragCoeff: 0.002,
-        //gravity: -1,
-        timeStep: 50
+        gravity: -20,
+        timeStep: 20
        // dragCoeff: 0.02,
         //gravity: 0.1
         /*springLength: 150,

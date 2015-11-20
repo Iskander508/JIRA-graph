@@ -72,6 +72,9 @@ class GIT:
                     branches.append(Branch(name, remote))
         return branches
         
+    def getInfo(self, id):
+        return self.runGit(['log', '--max-count=1', self.parseId(id)])
+        
     def conflicts(self):
         conflicts = []
         for line in self.status().splitlines():
