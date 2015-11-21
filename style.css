@@ -18,21 +18,21 @@ html, body, svg { width: 99%; height: 99%; }
 
 span.disabled { color: gray; }
 
-rect.boundary  { fill: transparent; stroke-linecap="square" }
+rect.boundary  { fill:transparent; stroke-linecap:round; }
 g.JIRA rect.boundary { stroke:black; stroke-width:1; }
 g.git rect.boundary { stroke:black; stroke-width:2; }
-g.stash rect.boundary { stroke:gray; stroke-width:1; }
+g.stash rect.boundary { stroke:gray; stroke-width:1; fill:rgba(127, 127, 127, 0.08); }
 
-g.Task rect.boundary { stroke: #bfe4ff; }
-g.Task line.issue-type { stroke: #bfe4ff; }
-g.Story rect.boundary{ stroke: #b147ca; }
-g.Story line.issue-type { stroke: #b147ca; }
-g.Bug rect.boundary { stroke: #cc0000; }
-g.Bug line.issue-type { stroke: #cc0000; }
-g.TestingSubtask rect.boundary { stroke: #cccb6b; }
-g.TestingSubtask line.issue-type { stroke: #cccb6b; }
-g.TechnicalSubtask rect.boundary { stroke: #b3f290; }
-g.TechnicalSubtask line.issue-type { stroke: #b3f290; }
+g.Task rect.boundary { stroke: rgb(191, 228, 255); fill: rgba(191, 228, 255, 0.05); }
+g.Task line.issue-type { stroke: rgb(191, 228, 255); }
+g.Story rect.boundary{ stroke: rgb(177, 71, 202); fill: rgba(177, 71, 202, 0.03); }
+g.Story line.issue-type { stroke: rgb(177, 71, 202); }
+g.Bug rect.boundary { stroke: rgb(204, 0, 0); fill: rgba(204, 0, 0, 0.03); }
+g.Bug line.issue-type { stroke: rgb(204, 0, 0); }
+g.TestingSubtask rect.boundary { stroke: rgb(204, 203, 107); fill: rgba(204, 203, 107, 0.05); }
+g.TestingSubtask line.issue-type { stroke: rgb(204, 203, 107); }
+g.TechnicalSubtask rect.boundary { stroke: rgb(179, 242, 144); fill: rgba(179, 242, 144, 0.03); }
+g.TechnicalSubtask line.issue-type { stroke: rgb(179, 242, 144); }
 
 g line.completed { stroke: green; }
 g line.incompleted { stroke: orange; }
@@ -42,7 +42,7 @@ g text.status { font-size: 12px; }
 
 g.commit rect.boundary { stroke: lightgray; }
 g.branch rect.boundary { stroke: orange; }
-g.commit text { fill: gray; }
+g.commit text { fill: lightgray; }
 g.master text.master { fill: red; }
 
 g.highlight-level-1 rect.boundary { stroke-width:2; }

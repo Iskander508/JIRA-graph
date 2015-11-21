@@ -114,6 +114,19 @@
 				"master": false,
 				"inMaster": false
 			}
+		},
+		{
+			"id": "pullRequest_222",
+			"type": "stash",
+			"data": {
+                "id": "#222",
+                "name": "Zaap/ZPL-321",
+				"type": "pull-request",
+				"URL": "http://www.seznam.cz",
+				"source": "zaap/ZPL-321",
+				"destination": "zaap/devel",
+                "reviewers": [{"name":"R1", "approved":true}]
+			}
 		}
 	],
 	"edges":[
@@ -140,6 +153,14 @@
 			"source": "809849819081891",
 			"target": "ac891984fdc04981cde669841",
 			"type": "4"
+		},
+		{
+			"source": "bd891984fdc04981cde669841",
+			"target": "pullRequest_222"
+		},
+		{
+			"source": "pullRequest_222",
+			"target": "ac891984fdc04981cde669841"
 		}
 	],
     "masterBranches": ["zaap/devel"],
