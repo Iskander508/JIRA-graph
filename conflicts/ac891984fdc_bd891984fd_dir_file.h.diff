@@ -1,0 +1,24 @@
+diff --git a/data.json b/data.json
+index 458b322..433eac0 100644
+--- a/data.json
++++ b/data.json
+@@ -105,6 +105,19 @@
+ 			}
+ 		},
+ 		{
++			"id": "conflict_bd891984fdc04981cde669841_ac891984fdc04981cde669841",
++			"type": "git",
++			"data": {
++				"type": "conflict",
++                "commitA": "ac891984fdc04981cde669841",
++                "commitB": "bd891984fdc04981cde669841"
++				"files": [{
++                    "file": "dir/file.h",
++                    "URL": "conflicts/ac891984fdc_bd891984fd_dir_file.h.diff"
++                }]
++			}
++		},
++		{
+ 			"id": "809849819081891",
+ 			"type": "git",
+ 			"data": {

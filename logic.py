@@ -54,7 +54,7 @@ class Logic:
         g = graph.Graph()
         gitRepository = git.GIT(self.config['git']['repository'])
 
-        commitsForConflictResolution = []
+        commitsForConflictResolution = set()
         for branch in self.calculateBranches(branches):
             branch.update({'type': 'branch' if (len(branch['branchNames']) != 0) else 'commit'})
             branch.update({'URL': self.config['stash']['url'] + branch['id'] })
@@ -66,8 +66,11 @@ class Logic:
                 g.addEdge(graph.Edge(nodeId, self.getGitNodeId(successor), gitRepository.getDistance(branch['id'], successor)))
                 
             if branch['master'] or (len(branch['successors']) == 0):
-                commitsForConflictResolution.append(branch['id'])
+                commitsForConflictResolution.add(branch['id'])
                 
+        
+        for branch in additionalBranches:
+            commitsForConflictResolution.add(gitRepository.revParse('origin/' + branch))
         
         for conflict in self.findConflicts(commitsForConflictResolution, os.path.dirname(os.path.abspath(filePath))):
             nodeId = getConflictNodeId(conflict)

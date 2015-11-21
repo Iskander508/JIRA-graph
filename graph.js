@@ -38,6 +38,7 @@ function renderGraph(content, options) {
         if (!showJIRAissues && node.type == 'JIRA') continue;
         if (!showBranches && node.type == 'git') continue;
         if (!showMergedBranches && node.type == 'git' && node.data.inMaster && !node.data.mergeBase) continue;
+        if (!showConflicts && node.type == 'git' && node.data.type == 'conflict') continue;
         if (!showPullRequests && node.type == 'stash') continue;
 
         graph.addNode(node.id, node);
@@ -131,7 +132,7 @@ function renderGraph(content, options) {
 
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
-                if (otherNode.data.type == 'git') {
+                if (otherNode.data.type == 'git' && otherNode.data.data.type != 'conflict') {
                     setClass(linkUI, successors ? "highlight-successor" : "highlight-predecessor", isOn);
                     highlightCommits(otherNode.id, isOn, successors);
                 }
@@ -160,6 +161,17 @@ function renderGraph(content, options) {
                 highlightIssue(otherNode, isOn, level - 1);
             });
         }
+    };
+    
+    var highlightConflict = function(node, isOn) {
+        setClass(node.svg, "highlight-level-3", isOn);
+        graph.forEachLinkedNode(node.id, function(otherNode, link){
+            setClass(otherNode.svg, "highlight-level-2", isOn);
+            var linkUI = graphics.getLinkUI(link.id);
+            if (linkUI) {
+                setClass(linkUI, "highlight-conflict", isOn);
+            }
+        });
     };
 
     graphics.node(function (node) {
@@ -284,67 +296,138 @@ function renderGraph(content, options) {
             case 'git':
                 {
                     var gitData = node.data.data;
-
-                    {
-                        var svgTitle = Viva.Graph.svg('a');
-                        svgTitle.link(gitData.URL);
-                        svgTitle.attr('target', '_blank');
-                        var isBranch = (gitData.type == 'branch');
-                        
-                        if (gitData.info) {
-                            svgTitle.append(Viva.Graph.svg('title').text(gitData.info));
-                        }
-
+                    
+                    switch(gitData.type) {
+                    case 'branch':
                         {
-                            var svgImage = Viva.Graph.svg('image')
-                               .attr('width', 15)
-                               .attr('height', 15)
-                               .attr('x', 2).attr('y', 2)
-                               .link(isBranch ? 'branch.svg' : 'git.png');
-                            if (isBranch) {
-                                svgImage.append(Viva.Graph.svg('title').text(gitData.master ? 'master branch' : 'branch'));
-                            }
-                            svgNode.append(svgImage);
-                        }
-
-                        if (!isBranch) {
-                            var svgText = Viva.Graph.svg('text')
-                                .attr('x', 20)
-                                .attr('y', 15)
-                                .text(gitData.id.substring(0,10));
-                            svgTitle.append(svgText);
-                        } else {
-                            
-                            var startY = 15;
-                            for (var index = 0; index < gitData.branchNames.length; index++) {
-                                var branchName = gitData.branchNames[index];
-                                var svgText = Viva.Graph.svg('text')
-                                .attr('x', 20).attr('y', startY)
-                                .text(branchName);
-
-                                if (content.masterBranches.indexOf(branchName) != -1) {
-                                    svgText.attr('class', 'master');
+                            {
+                                var svgTitle = Viva.Graph.svg('a');
+                                svgTitle.link(gitData.URL);
+                                svgTitle.attr('target', '_blank');
+                                
+                                if (gitData.info) {
+                                    svgTitle.append(Viva.Graph.svg('title').text(gitData.info));
                                 }
 
-                                svgTitle.append(svgText);
-                                startY += 15;
+                                {
+                                    var svgImage = Viva.Graph.svg('image')
+                                       .attr('width', 15)
+                                       .attr('height', 15)
+                                       .attr('x', 2).attr('y', 2)
+                                       .link('branch.svg');
+                                        svgImage.append(Viva.Graph.svg('title').text(gitData.master ? 'master branch' : 'branch'));
+                                    svgNode.append(svgImage);
+                                }
+
+                                    
+                                var startY = 15;
+                                for (var index = 0; index < gitData.branchNames.length; index++) {
+                                    var branchName = gitData.branchNames[index];
+                                    var svgText = Viva.Graph.svg('text')
+                                    .attr('x', 20).attr('y', startY)
+                                    .text(branchName);
+
+                                    if (content.masterBranches.indexOf(branchName) != -1) {
+                                        svgText.attr('class', 'master');
+                                    }
+
+                                    svgTitle.append(svgText);
+                                    startY += 15;
+                                }
+                                
+
+                                svgNode.append(svgTitle);
                             }
+
+                            if (gitData.master) {
+                                svgNode.attr('class', svgNode.attr('class') + ' master');
+                            }
+
+                            $(svgNode).hover(function() { // mouse over
+                                highlightCommits(node.id, true, true);
+                                highlightCommits(node.id, true, false);
+                            }, function() { // mouse out
+                                highlightCommits(node.id, false, true);
+                                highlightCommits(node.id, false, false);
+                            });
                         }
+                        break;
+                        
+                    case 'commit':
+                        {
+                            {
+                                var svgTitle = Viva.Graph.svg('a');
+                                svgTitle.link(gitData.URL);
+                                svgTitle.attr('target', '_blank');                                
+                                
+                                if (gitData.info) {
+                                    svgTitle.append(Viva.Graph.svg('title').text(gitData.info));
+                                }
 
-                        svgNode.append(svgTitle);
+                                {
+                                    var svgImage = Viva.Graph.svg('image')
+                                       .attr('width', 15)
+                                       .attr('height', 15)
+                                       .attr('x', 2).attr('y', 2)
+                                       .link('git.png');
+                                    svgNode.append(svgImage);
+                                }
+
+                                var svgText = Viva.Graph.svg('text')
+                                    .attr('x', 20)
+                                    .attr('y', 15)
+                                    .text(gitData.id.substring(0,10));
+                                svgTitle.append(svgText);
+                                
+                                svgNode.append(svgTitle);
+                            }
+
+                            $(svgNode).hover(function() { // mouse over
+                                highlightCommits(node.id, true, true);
+                                highlightCommits(node.id, true, false);
+                            }, function() { // mouse out
+                                highlightCommits(node.id, false, true);
+                                highlightCommits(node.id, false, false);
+                            });
+                        }
+                        break;
+                    
+                    case 'conflict':
+                        {
+                            {
+                                {
+                                    var svgImage = Viva.Graph.svg('image')
+                                       .attr('width', 15)
+                                       .attr('height', 15)
+                                       .attr('x', 2).attr('y', 2)
+                                       .link('conflict.svg');
+                                       svgImage.append(Viva.Graph.svg('title').text('potential merge conflict'));
+                                    svgNode.append(svgImage);
+                                }
+                                
+                                var startY = 15;
+                                for (var index = 0; index < gitData.files.length; index++) {
+                                    var file = gitData.files[index];
+                                    
+                                    var svgFileLink = Viva.Graph.svg('a');
+                                    svgFileLink.link(file.URL);
+                                    svgFileLink.attr('target', '_blank');
+                                    svgFileLink.append(Viva.Graph.svg('text').attr('x', 20).attr('y', startY).text(file.file));
+                                    
+                                    svgNode.append(svgFileLink);
+                                    startY += 15;
+                                }
+                            }
+
+                            $(svgNode).hover(function() { // mouse over
+                                highlightConflict(node, true);
+                            }, function() { // mouse out
+                                highlightConflict(node, false);
+                            });
+                        }
+                        break;
                     }
 
-                    if (gitData.master) {
-                        svgNode.attr('class', svgNode.attr('class') + ' master');
-                    }
-
-                    $(svgNode).hover(function() { // mouse over
-                        highlightCommits(node.id, true, true);
-                        highlightCommits(node.id, true, false);
-                    }, function() { // mouse out
-                        highlightCommits(node.id, false, true);
-                        highlightCommits(node.id, false, false);
-                    });
                 }
                 break;
             case 'stash':
