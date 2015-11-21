@@ -80,7 +80,10 @@ class GIT:
         for line in self.status().splitlines():
             fields = line.split(' ', 1)
             if 'U' in fields[0]:
-                conflicts.append((fields[1].strip(), self.diff(path=fields[1])))
+                conflicts.append({
+                                'file': fields[1].strip(),
+                                'diff': self.diff(path=fields[1])
+                                })
         return conflicts
         
     def parseId(self, id):

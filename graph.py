@@ -58,8 +58,7 @@ class Node:
                     raise GraphError('Missing field in JIRA data node: ' + json.dumps(data, indent=4))
                     
         if _type == Node.Type.GIT:
-            if ((not 'type' in data)
-                or (not 'URL' in data)):
+            if (not 'type' in data):
                     raise GraphError('Missing field in git data node: ' + json.dumps(data, indent=4))
                     
         if _type == Node.Type.STASH:

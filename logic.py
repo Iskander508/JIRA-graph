@@ -5,6 +5,7 @@ import jira
 import graph
 import gitGraph
 import git
+import os
     
 class LogicError(Exception):
     def __init__(self, value):
@@ -52,7 +53,8 @@ class Logic:
           
         g = graph.Graph()
         gitRepository = git.GIT(self.config['git']['repository'])
-        
+
+        commitsForConflictResolution = []
         for branch in self.calculateBranches(branches):
             branch.update({'type': 'branch' if (len(branch['branchNames']) != 0) else 'commit'})
             branch.update({'URL': self.config['stash']['url'] + branch['id'] })
@@ -62,6 +64,18 @@ class Logic:
             g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, branch))
             for successor in branch['successors']:
                 g.addEdge(graph.Edge(nodeId, self.getGitNodeId(successor), gitRepository.getDistance(branch['id'], successor)))
+                
+            if branch['master'] or (len(branch['successors']) == 0):
+                commitsForConflictResolution.append(branch['id'])
+                
+        
+        for conflict in self.findConflicts(commitsForConflictResolution, os.path.dirname(os.path.abspath(filePath))):
+            nodeId = getConflictNodeId(conflict)
+            conflict.update({'type': 'conflict'})
+            g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, conflict))
+            g.addEdge(graph.Edge(self.getGitNodeId(conflict['commitA']), nodeId))
+            g.addEdge(graph.Edge(self.getGitNodeId(conflict['commitB']), nodeId))
+        
         
         for id, data in issues.items():
             if data['statusColor'] == 'blue-gray':
@@ -158,6 +172,48 @@ class Logic:
                                 node['mergeBase'] = True
                                 break
                                 
+        return result
+        
+    # finds all conflicts among specified commits
+    def findConflicts(self, commits, outputDir):
+        gitRepository = git.GIT(self.config['git']['repository'])
+        result = []
+        for commitA in commits:
+            for commitB in commits:
+                if commitA > commitB:
+                    gitRepository.checkout(commitA)
+                    try:
+                        gitRepository.merge(commitB)
+                    except git.GitError:
+                        conflict = {
+                            'commitA': commitA,
+                            'commitB': commitB,
+                            'files': self.collectConflicts(gitRepository, commitA, commitB, outputDir)
+                            }
+                        if len(conflict['files']) != 0:
+                            result.append(conflict)
+                        
+                    gitRepository.reset()
+                    
+        return result
+        
+    # creates diff files for all conflicts in the repository
+    def collectConflicts(self, gitRepository, commitA, commitB, outputDir):
+        conflictsDir = os.path.join(outputDir, 'conflicts')
+        if not os.path.exists(conflictsDir):
+            os.makedirs(conflictsDir)
+    
+        result = []
+        for conflict in gitRepository.conflicts():
+            fileName = commitA[:10] + '_' + commitB[:10] + '_' + conflict['file'].replace('/','_').replace('-','_') + '.diff'
+            with open(os.path.join(conflictsDir, fileName), 'w') as outfile:
+                outfile.write(conflict['diff'].encode('utf-8'))
+                
+            result.append({
+                        'file': conflict['file'],
+                        'URL': 'conflicts/' + fileName
+                        })
+            
         return result
         
     def parseActiveSprintIssues(self, jiraProjectId):
@@ -314,3 +370,6 @@ class Logic:
         
     def getGitNodeId(self, gitId):
         return 'git_' + str(gitId).replace('/','_').replace('@','_').replace('-','_')
+        
+    def getConflictNodeId(self, conflict):
+        return 'conflict_' + conflict['commitA'] + '_' + conflict['commitB']
