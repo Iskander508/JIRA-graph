@@ -574,7 +574,8 @@ function renderGraph(content, options) {
         springCoeff: 0.00005,
         //dragCoeff: 0.002,
         gravity: -20,
-        timeStep: 20
+        timeStep: 20,
+        stableThreshold: 0.03
        // dragCoeff: 0.02,
         //gravity: 0.1
         /*springLength: 150,

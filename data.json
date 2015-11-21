@@ -88,8 +88,31 @@
 			"data": {
 				"type": "branch",
 				"URL": "http://www.seznam.cz",
-				"name": "zaap/devel",
-				"master": true
+				"branchNames": ["zaap/devel"],
+				"master": true,
+				"inMaster": false
+			}
+		},
+		{
+			"id": "bd891984fdc04981cde669841",
+			"type": "git",
+			"data": {
+				"type": "branch",
+				"URL": "http://www.seznam.cz",
+				"branchNames": ["zaap/ZPL-321"],
+				"master": false,
+				"inMaster": false
+			}
+		},
+		{
+			"id": "809849819081891",
+			"type": "git",
+			"data": {
+                "id": "809849819081891",
+				"type": "commit",
+				"URL": "http://www.seznam.cz",
+				"master": false,
+				"inMaster": false
 			}
 		}
 	],
@@ -103,7 +126,22 @@
 			"source": "issue_207736",
 			"target": "issue_207738",
 			"type": "subtask"
+		},
+		{
+			"source": "issue_207736",
+			"target": "bd891984fdc04981cde669841"
+		},
+		{
+			"source": "ac891984fdc04981cde669841",
+			"target": "bd891984fdc04981cde669841",
+			"type": "2"
+		},
+		{
+			"source": "809849819081891",
+			"target": "ac891984fdc04981cde669841",
+			"type": "4"
 		}
 	],
+    "masterBranches": ["zaap/devel"],
     "timestamp": "8.11.2015 9:42"
 }
