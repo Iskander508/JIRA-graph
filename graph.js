@@ -140,8 +140,9 @@ function renderGraph(content, options) {
         });
     };
 
-    var highlightPullRequest = function(nodeId, isOn) {
-        graph.forEachLinkedNode(nodeId, function(otherNode, link){
+    var highlightPullRequest = function(node, isOn) {
+        setClass(node.svg, "highlight-level-1", isOn);
+        graph.forEachLinkedNode(node.id, function(otherNode, link){
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
                 if (otherNode.data.type == 'git') {
@@ -414,6 +415,10 @@ function renderGraph(content, options) {
                                     svgFileLink.attr('target', '_blank');
                                     svgFileLink.append(Viva.Graph.svg('text').attr('x', 20).attr('y', startY).text(file.file));
                                     
+                                    if (file.diff) {
+                                        svgFileLink.append(Viva.Graph.svg('title').text(file.diff));
+                                    }
+                                    
                                     svgNode.append(svgFileLink);
                                     startY += 15;
                                 }
@@ -484,9 +489,9 @@ function renderGraph(content, options) {
                     }
 
                     $(svgNode).hover(function() { // mouse over
-                        highlightPullRequest(node.id, true);
+                        highlightPullRequest(node, true);
                     }, function() { // mouse out
-                        highlightPullRequest(node.id, false);
+                        highlightPullRequest(node, false);
                     });
                 }
                 break;

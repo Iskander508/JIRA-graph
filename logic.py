@@ -214,7 +214,8 @@ class Logic:
                 
             result.append({
                         'file': conflict['file'],
-                        'URL': 'conflicts/' + fileName
+                        'URL': 'conflicts/' + fileName,
+                        'diff': conflict['diff']
                         })
             
         return result

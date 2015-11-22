@@ -43,6 +43,28 @@
 
             return options;
         }
+        
+        function redrawOptions() {
+            if ($('#JIRA').is(':checked')) {
+                $('#JIRA-all').removeAttr("disabled");
+                $('#JIRA-all-text').removeClass("disabled");
+            } else {
+                $('#JIRA-all').attr("disabled", true);
+                $('#JIRA-all-text').addClass("disabled");
+            }
+
+            if ($('#branches').is(':checked')) {
+                $('#merged').removeAttr("disabled");
+                $('#merged-text').removeClass("disabled");
+                $('#conflicts').removeAttr("disabled");
+                $('#conflicts-text').removeClass("disabled");
+            } else {
+                $('#merged').attr("disabled", true);
+                $('#merged-text').addClass("disabled");
+                $('#conflicts').attr("disabled", true);
+                $('#conflicts-text').addClass("disabled");
+            }
+        }
     </script>
 
 </head>
@@ -72,29 +94,15 @@
                     }
                 }
                 
+                redrawOptions();
+                
 
                 // Enable/disable depending checkboxes
                 $('#JIRA').click(function() {
-                    if ($('#JIRA').is(':checked')) {
-                        $('#JIRA-all').removeAttr("disabled");
-                        $('#JIRA-all-text').removeClass("disabled");
-                    } else {
-                        $('#JIRA-all').attr("disabled", true);
-                        $('#JIRA-all-text').addClass("disabled");
-                    }
+                    redrawOptions();
                 });
                 $('#branches').click(function () {
-                    if ($('#branches').is(':checked')) {
-                        $('#merged').removeAttr("disabled");
-                        $('#merged-text').removeClass("disabled");
-                        $('#conflicts').removeAttr("disabled");
-                        $('#conflicts-text').removeClass("disabled");
-                    } else {
-                        $('#merged').attr("disabled", true);
-                        $('#merged-text').addClass("disabled");
-                        $('#conflicts').attr("disabled", true);
-                        $('#conflicts-text').addClass("disabled");
-                    }
+                    redrawOptions();
                 });
                 $('#config-form input').click(function () {
                     
