@@ -4,6 +4,12 @@
 import logic
 import datetime
 import time
+import os
+import shutil
+import sys
+import distutils
+
+destinationOutDir = sys.argv[1]
 
 startTimes = [
     "07:00",
@@ -45,16 +51,19 @@ def runLogic():
     #l = logic.Logic(logicConfig)
     return 0
     
+runLogic()
 while True:
     now = datetime.datetime.now()
     
     nextStartTime = "24:00"
     perform = False
-    for startTime in startTimes:
-        if (now.hour < getHour(startTime)) or ((now.hour == getHour(startTime)) and (now.minute < getMinute(startTime))):
-            nextStartTime = startTime
-            perform = True
-            break
+    
+    if now.weekday() < 5: # work-days only
+        for startTime in startTimes:
+            if (now.hour < getHour(startTime)) or ((now.hour == getHour(startTime)) and (now.minute < getMinute(startTime))):
+                nextStartTime = startTime
+                perform = True
+                break
             
     print("Next run in " + nextStartTime)
 
