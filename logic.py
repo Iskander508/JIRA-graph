@@ -73,7 +73,7 @@ class Logic:
             commitsForConflictResolution.add(gitRepository.revParse('origin/' + branch))
         
         for conflict in self.findConflicts(commitsForConflictResolution, os.path.dirname(os.path.abspath(filePath))):
-            nodeId = getConflictNodeId(conflict)
+            nodeId = self.getConflictNodeId(conflict)
             conflict.update({'type': 'conflict'})
             g.addNode(graph.Node(nodeId, graph.Node.Type.GIT, conflict))
             g.addEdge(graph.Edge(self.getGitNodeId(conflict['commitA']), nodeId))
@@ -187,7 +187,7 @@ class Logic:
                     gitRepository.checkout(commitA)
                     try:
                         gitRepository.merge(commitB)
-                    except git.GitError:
+                    except git.GIT.GitError:
                         conflict = {
                             'commitA': commitA,
                             'commitB': commitB,

@@ -31,7 +31,7 @@ class GIT:
     def checkout(self, id, updateSubmodules=True):
         self.runGit(['checkout', self.parseId(id)])
         if updateSubmodules:
-            return self.runGit(['submodule', '--update', '--init', '--recursive'])
+            return self.runGit(['submodule', 'update', '--init', '--recursive'])
         
     def merge(self, id):
         return self.runGit(['merge', self.parseId(id)])
