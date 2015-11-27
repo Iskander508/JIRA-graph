@@ -15,6 +15,8 @@
             }, 3600 * 1000);
         }
 
+        var renderer = null;
+
         function drawGraph() {
             $.ajax({
                 url: "data.json",
@@ -23,7 +25,7 @@
                 success: function(content) {
                     $("svg").remove();
 
-                    renderGraph(content, getOptions());
+                    renderer = renderGraph(content, getOptions());
 
                     if ('timestamp' in content) {
                         $('#timestamp').text(content.timestamp);
@@ -65,6 +67,16 @@
                 $('#conflicts-text').addClass("disabled");
             }
         }
+
+        function stopLayout(isOn) {
+            if (renderer) {
+                if (isOn) {
+                    renderer.pause();
+                } else {
+                    renderer.resume();
+                }
+            }
+        }
     </script>
 
 </head>
@@ -79,6 +91,7 @@
             &nbsp;&nbsp;<span title="Show merge conflicts"><input type="checkbox" id="conflicts" checked /><span id="conflicts-text">Conflicts</span></span><br />
             <span title="Hide nodes with no connections"><input type="checkbox" id="hide-orphans" />Hide orphans</span>
         </form>
+        <span title="Stops layout processing"><input type="checkbox" id="layout" />Stop positioning</span>
 
         <script type="text/javascript">
             $(document).ready(function(){
@@ -118,6 +131,9 @@
                     window.history.pushState(null, "Active tasks", "index.html?options=" + options);
 
                     drawGraph();
+                });
+                $('#layout').click(function () {
+                    stopLayout($('#layout').is(':checked'));
                 });
             });
         </script>

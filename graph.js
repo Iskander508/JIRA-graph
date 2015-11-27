@@ -750,4 +750,5 @@ function renderGraph(content, options) {
         layout: layout
     });
     renderer.run(50);
+    return renderer;
 }
