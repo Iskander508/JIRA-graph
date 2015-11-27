@@ -30,11 +30,18 @@ function renderGraph(content, options) {
     var showConflicts = (options.indexOf('conflicts') != -1);
     var hideOrphans = (options.indexOf('hide-orphans') != -1);
 
-    var nodeIds = new Set();
+    var displayedNodeIds = new Set();
+
+    var nodeToEdgesMap = {};
+    var nodeToDataMap = {};
 
     
     for (var index = 0; index < content.nodes.length; index++) {
         var node = content.nodes[index];
+
+        nodeToEdgesMap[node.id] = [];
+        nodeToDataMap[node.id] = node;
+
         if (!showJIRAissues && node.type == 'JIRA') continue;
         if (!showBranches && node.type == 'git') continue;
         if (!showMergedBranches && node.type == 'git' && node.data.inMaster && !node.data.mergeBase) continue;
@@ -42,12 +49,16 @@ function renderGraph(content, options) {
         if (!showPullRequests && node.type == 'stash') continue;
 
         graph.addNode(node.id, node);
-        nodeIds.add(node.id);
+        displayedNodeIds.add(node.id);
     }
     
     for (var index = 0; index < content.edges.length; index++) {
         var edge = content.edges[index];
-        if (!nodeIds.has(edge.source) || !nodeIds.has(edge.target)) continue;
+
+        nodeToEdgesMap[edge.source].push(edge);
+        nodeToEdgesMap[edge.target].push(edge);
+
+        if (!displayedNodeIds.has(edge.source) || !displayedNodeIds.has(edge.target)) continue;
         graph.addLink(edge.source, edge.target, edge.type);
     }
 
@@ -97,6 +108,7 @@ function renderGraph(content, options) {
 
         nodeIdsToRemove.forEach(function(nodeId) {
             graph.removeNode(nodeId);
+            displayedNodeIds.delete(nodeId);
         });
     }
 
@@ -110,21 +122,40 @@ function renderGraph(content, options) {
 
     var graphics = Viva.Graph.View.svgGraphics();
 
-    var setClass = function(svgObject, className, isOn) {
+    var findClass = function (svgObject, className) {
         var curClass = svgObject.attr("class");
         var curClasses = curClass ? curClass.split(' ') : [];
         var index = curClasses.indexOf(className);
-        var hasClass = (index != -1);
+        return [(index != -1), index, curClasses];
+    };
 
-        if (hasClass == isOn) return;
+    var hasClass = function (svgObject, className) {
+        return findClass(svgObject, className)[0];
+    };
+
+    var setClass = function (svgObject, className, isOn) {
+        var found = findClass(svgObject, className);
+        if (found[0] == isOn) return;
 
         if (isOn) {
-            curClasses.push(className);
+            found[2].push(className);
         } else {
-            curClasses.splice(index, 1);
+            found[2].splice(found[1], 1);
         }
-        svgObject.attr("class", curClasses.join(' '));
+        svgObject.attr("class", found[2].join(' '));
     };
+
+    var toggleClass = function (svgObject, className) {
+        var found = findClass(svgObject, className);
+
+        if (found[0]) {
+            found[2].splice(found[1], 1);
+        } else {
+            found[2].push(className);
+        }
+        svgObject.attr("class", found[2].join(' '));
+    };
+
 
     var highlightCommits = function(nodeId, isOn, successors) {
         graph.forEachLinkedNode(nodeId, function(otherNode, link){
@@ -138,6 +169,40 @@ function renderGraph(content, options) {
                 }
             }
         });
+    };
+
+    var showIssues = function (node) {
+        toggleClass(node.svg, "selected");
+
+        if (!hasClass(node.svg, "selected")) {
+            var toBeRemoved = [];
+            graph.forEachLinkedNode(node.id, function (otherNode, link) {
+                if (otherNode.data.type == 'JIRA') {
+                    toBeRemoved.push(otherNode.id);
+                }
+            });
+
+            for (var index = 0; index < toBeRemoved.length; index++) {
+                graph.removeNode(toBeRemoved[index]);
+                displayedNodeIds.delete(toBeRemoved[index]);
+            }
+
+            return;
+        }
+
+        var edges = nodeToEdgesMap[node.id];
+        for (var index = 0; index < edges.length; index++) {
+            var edge = edges[index];
+            var otherNodeId = (edge.source == node.id) ? edge.target : edge.source;
+            if (displayedNodeIds.has(otherNodeId)) continue;
+
+            var nodeItem = nodeToDataMap[otherNodeId];
+            if (nodeItem.type == 'JIRA') {
+                graph.addNode(nodeItem.id, nodeItem);
+                displayedNodeIds.add(nodeItem.id);
+                graph.addLink(edge.source, edge.target, edge.type);
+            }
+        }
     };
 
     var highlightPullRequest = function(node, isOn) {
@@ -351,6 +416,12 @@ function renderGraph(content, options) {
                                 highlightCommits(node.id, false, true);
                                 highlightCommits(node.id, false, false);
                             });
+
+                            if (!showJIRAissues) {
+                                $(svgNode).click(function () { // mouse click
+                                    showIssues(node);
+                                });
+                            }
                         }
                         break;
                         
