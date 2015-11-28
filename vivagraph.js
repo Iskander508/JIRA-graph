@@ -677,7 +677,7 @@ function createLayout(graph, physicsSettings) {
         pos = physicsSimulator.getBestNewBodyPosition(neighbors);
       }
 
-      body = physicsSimulator.addBodyAt(pos);
+      body = physicsSimulator.addBodyAt(pos, node.data);
 
       nodeBodies[nodeId] = body;
       updateBodyMass(nodeId);
@@ -889,33 +889,18 @@ function physicsSimulator(settings) {
     },
 
     /**
-     * Adds body to the system
-     *
-     * @param {ngraph.physics.primitives.Body} body physical body
-     *
-     * @returns {ngraph.physics.primitives.Body} added body
-     */
-    addBody: function (body) {
-      if (!body) {
-        throw new Error('Body is required');
-      }
-      bodies.push(body);
-
-      return body;
-    },
-
-    /**
      * Adds body to the system at given position
      *
      * @param {Object} pos position of a body
      *
      * @returns {ngraph.physics.primitives.Body} added body
      */
-    addBodyAt: function (pos) {
+    addBodyAt: function (pos, data) {
       if (!pos) {
         throw new Error('Body position is required');
       }
       var body = createBody(pos);
+      body["data"] = data;
       bodies.push(body);
 
       return body;
@@ -1025,7 +1010,15 @@ function physicsSimulator(settings) {
       // only add bodies if there the array is not empty:
       quadTree.insertBodies(bodies); // performance: O(n * log n)
       while (i--) {
-        body = bodies[i];
+          body = bodies[i];
+
+          if (!("width" in body)) {
+              var bbox = body.data.svgObject.getBBox();
+              if (bbox) {
+                  body.width = bbox.width;
+                  body.height = bbox.height;
+              }
+          }
         // If body is pinned there is no point updating its forces - it should
         // never move:
         if (!body.isPinned) {
@@ -1549,9 +1542,25 @@ module.exports = function(options) {
         if (body && differentBody) {
           // If the current node is a leaf node (and it is not source body),
           // calculate the force exerted by the current node on body, and add this
-          // amount to body's net force.
-          dx = body.pos.x - sourceBody.pos.x;
-          dy = body.pos.y - sourceBody.pos.y;
+            // amount to body's net force.
+            if ('width' in body && 'width' in sourceBody && sourceBody.width && sourceBody.height && body.width && body.height) {
+
+                var bodyMiddleX = body.pos.x + body.width / 2;
+                var sourceMiddleX = sourceBody.pos.x + sourceBody.width / 2;
+                dx = (bodyMiddleX - sourceMiddleX) / Math.log((body.width + sourceBody.width) / 2);
+
+                var bodyMiddleY = body.pos.y + body.height / 2;
+                var sourceMiddleY = sourceBody.pos.y + sourceBody.height / 2;
+                dy = (bodyMiddleY - sourceMiddleY) / Math.log((body.height + sourceBody.height) / 2);
+
+                dx /= Math.log((body.width + sourceBody.width) / (body.height + sourceBody.height));
+
+            } else {
+                dx = body.pos.x - sourceBody.pos.x;
+                dy = body.pos.y - sourceBody.pos.y;
+            }
+
+          
           r = Math.sqrt(dx * dx + dy * dy);
 
           if (r === 0) {

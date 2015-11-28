@@ -38,6 +38,7 @@ function renderGraph(content, options) {
     
     for (var index = 0; index < content.nodes.length; index++) {
         var node = content.nodes[index];
+        node["svgObject"] = null;
 
         nodeToEdgesMap[node.id] = [];
         nodeToDataMap[node.id] = node;
@@ -172,9 +173,9 @@ function renderGraph(content, options) {
     };
 
     var showIssues = function (node) {
-        toggleClass(node.svg, "selected");
+        toggleClass(node.data.svgObject, "selected");
 
-        if (!hasClass(node.svg, "selected")) {
+        if (!hasClass(node.data.svgObject, "selected")) {
             var toBeRemoved = [];
             graph.forEachLinkedNode(node.id, function (otherNode, link) {
                 if (otherNode.data.type == 'JIRA') {
@@ -206,7 +207,7 @@ function renderGraph(content, options) {
     };
 
     var highlightPullRequest = function(node, isOn) {
-        setClass(node.svg, "highlight-level-1", isOn);
+        setClass(node.data.svgObject, "highlight-level-1", isOn);
         graph.forEachLinkedNode(node.id, function(otherNode, link){
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
@@ -221,7 +222,7 @@ function renderGraph(content, options) {
     var highlightIssue = function(node, isOn, level) {
         if (level == 0) return;
 
-        setClass(node.svg, "highlight-level-" + level, isOn);
+        setClass(node.data.svgObject, "highlight-level-" + level, isOn);
         if (node.data.type == 'JIRA') {
             graph.forEachLinkedNode(node.id, function(otherNode, link){
                 highlightIssue(otherNode, isOn, level - 1);
@@ -230,9 +231,9 @@ function renderGraph(content, options) {
     };
     
     var highlightConflict = function(node, isOn) {
-        setClass(node.svg, "highlight-level-3", isOn);
+        setClass(node.data.svgObject, "highlight-level-3", isOn);
         graph.forEachLinkedNode(node.id, function(otherNode, link){
-            setClass(otherNode.svg, "highlight-level-2", isOn);
+            setClass(otherNode.data.svgObject, "highlight-level-2", isOn);
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
                 setClass(linkUI, "highlight-conflict", isOn);
@@ -568,7 +569,7 @@ function renderGraph(content, options) {
                 break;
         }
 
-        node["svg"] = svgNode;
+        node.data["svgObject"] = svgNode;
         return svgNode;
     }).placeNode(function (node, pos) {
         // 'g' element doesn't have convenient (x,y) attributes, instead
@@ -639,8 +640,8 @@ function renderGraph(content, options) {
         var source = graph.getNode(path.link.fromId);
         var target = graph.getNode(path.link.toId);
         
-        var sourceElement = document.getElementById(source.svg.id);
-        var targetElement = document.getElementById(target.svg.id);
+        var sourceElement = document.getElementById(source.data.svgObject.id);
+        var targetElement = document.getElementById(target.data.svgObject.id);
 
         if (!sourceElement || !targetElement) return;
 
@@ -729,10 +730,10 @@ function renderGraph(content, options) {
 
     // Render the graph
     var layout = Viva.Graph.Layout.forceDirected(graph, {
-        springLength: 150,
+        springLength: 80,
         springCoeff: 0.00005,
-        //dragCoeff: 0.002,
-        gravity: -20,
+        //dragCoeff: 0.00002,
+        gravity: -3,
         timeStep: 20,
         stableThreshold: 0.03
        // dragCoeff: 0.02,
