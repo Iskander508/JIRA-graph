@@ -63,9 +63,8 @@ function renderGraph(content, options) {
         graph.addLink(edge.source, edge.target, edge.type);
     }
 
+    var nodeIdsToRemove = new Set();
     if (!showALLissues) {
-        var nodeIdsToRemove = new Set();
-
         var isInactiveIssue = function(node, graph, level) {
             if (level > 20) return false;
             if (node.data.type != 'JIRA') return false;
@@ -106,22 +105,27 @@ function renderGraph(content, options) {
                 nodeIdsToRemove.add(node.id);
             }
         });
-
-        nodeIdsToRemove.forEach(function(nodeId) {
-            graph.removeNode(nodeId);
-            displayedNodeIds.delete(nodeId);
-        });
     }
 
     if (hideOrphans) {
         graph.forEachNode(function(node) {
             if (graph.getLinks(node.id).length == 0) {
-                graph.removeNode(node.id);
+                nodeIdsToRemove.add(node.id);
             }
         });
     }
 
+    nodeIdsToRemove.forEach(function (nodeId) {
+        graph.removeNode(nodeId);
+        displayedNodeIds.delete(nodeId);
+    });
+
+
+
     var graphics = Viva.Graph.View.svgGraphics();
+
+
+
 
     var findClass = function (svgObject, className) {
         var curClass = svgObject.attr("class");
@@ -165,7 +169,9 @@ function renderGraph(content, options) {
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
                 if (otherNode.data.type == 'git' && otherNode.data.data.type != 'conflict') {
-                    setClass(linkUI, successors ? "highlight-successor" : "highlight-predecessor", isOn);
+                    var highlightClass = successors ? "highlight-successor" : "highlight-predecessor";
+                    setClass(linkUI, highlightClass, isOn);
+                    setClass(otherNode.data.svgObject, highlightClass, isOn);
                     highlightCommits(otherNode.id, isOn, successors);
                 }
             }
