@@ -117,7 +117,7 @@
                 "commitB": "bd891984fdc04981cde669841",
                 "files": [
                     {
-                        "file": "dir/file.h",
+                        "file": "some/extreme/long/directory/name/filename.file",
                         "URL": "conflicts/ac891984fdc_bd891984fd_dir_file.h.diff",
                         "diff": "diff --git a/data.json b/data.json\nindex 458b322..433eac0 100644\n--- a/data.json\n+++ b/data.json\n@@ -105,6 +105,19 @@\n \t\t\t}\n \t\t},\n \t\t{\n+\t\t\t\"id\": \"conflict_bd891984fdc04981cde669841_ac891984fdc04981cde669841\",\n+\t\t\t\"type\": \"git\","
                     }

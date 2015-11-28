@@ -1545,15 +1545,43 @@ module.exports = function(options) {
             // amount to body's net force.
             if ('width' in body && 'width' in sourceBody && sourceBody.width && sourceBody.height && body.width && body.height) {
 
+                function abs(x) { return x > 0 ? x : -x; }
+                function minimum(x, size) {
+                    var startIndex = 0;
+                    if (size) startIndex = size;
+                    if ((x.length - startIndex) == 2) return x[startIndex] > x[startIndex + 1] ? x[startIndex + 1] : x[startIndex];
+                    if (x[startIndex] < x[startIndex + 1]) {
+                        x[startIndex + 1] = x[startIndex];
+                    }
+                    return minimum(x, startIndex + 1);
+                }
+
                 var bodyMiddleX = body.pos.x + body.width / 2;
                 var sourceMiddleX = sourceBody.pos.x + sourceBody.width / 2;
-                dx = (bodyMiddleX - sourceMiddleX) / Math.log((body.width + sourceBody.width) / 2);
 
                 var bodyMiddleY = body.pos.y + body.height / 2;
                 var sourceMiddleY = sourceBody.pos.y + sourceBody.height / 2;
-                dy = (bodyMiddleY - sourceMiddleY) / Math.log((body.height + sourceBody.height) / 2);
 
-                dx /= Math.log((body.width + sourceBody.width) / (body.height + sourceBody.height));
+                var ratioCoefX = 1 + 1 / Math.log(body.width + sourceBody.width);
+                var ratioCoefY = 1 + 1 / Math.log(body.height + sourceBody.height);
+
+
+                var middleDX = abs(bodyMiddleX - sourceMiddleX);
+                var middleToSideAX = minimum([abs(sourceBody.pos.x - bodyMiddleX), abs(body.pos.x - sourceMiddleX)]);
+                var middleToSideBX = minimum([abs(sourceBody.pos.x + sourceBody.width - bodyMiddleX), abs(body.pos.x + body.width - sourceMiddleX)]);
+
+                dx = (ratioCoefX * middleDX + middleToSideAX + middleToSideBX) / (3 + ratioCoefX);
+
+
+                var middleDY = abs(bodyMiddleY - sourceMiddleY);
+                var middleToSideAY = minimum([abs(sourceBody.pos.y - bodyMiddleY), abs(body.pos.y - sourceMiddleY)]);
+                var middleToSideBY = minimum([abs(sourceBody.pos.y + sourceBody.height - bodyMiddleY), abs(body.pos.y + body.height - sourceMiddleY)]);
+
+                dy = (ratioCoefY * middleDY + middleToSideAY + middleToSideBY) / (3 + ratioCoefY);
+
+
+                dx *= (bodyMiddleX > sourceMiddleX) ? 1 : -1;
+                dy *= (bodyMiddleY > sourceMiddleY) ? 1 : -1;
 
             } else {
                 dx = body.pos.x - sourceBody.pos.x;

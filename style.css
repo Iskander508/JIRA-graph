@@ -53,6 +53,7 @@ g.selected rect.boundary { stroke-width:4; fill: rgba(255, 165, 0, 0.1); }
 
 g.highlight-successor rect.boundary { stroke: green; }
 g.highlight-predecessor rect.boundary { stroke: blue; }
+g.highlight-conflict rect.boundary { stroke: red; }
 
 
 

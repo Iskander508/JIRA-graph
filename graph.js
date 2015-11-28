@@ -219,7 +219,9 @@ function renderGraph(content, options) {
             if (linkUI) {
                 if (otherNode.data.type == 'git') {
                     var successor = (otherNode.id == link.toId);
-                    setClass(linkUI, successor ? "highlight-successor" : "highlight-predecessor", isOn);
+                    var highlightClass = successor ? "highlight-successor" : "highlight-predecessor";
+                    setClass(otherNode.data.svgObject, highlightClass, isOn);
+                    setClass(linkUI, highlightClass, isOn);
                 }
             }
         });
@@ -242,6 +244,7 @@ function renderGraph(content, options) {
             setClass(otherNode.data.svgObject, "highlight-level-2", isOn);
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
+                setClass(otherNode.data.svgObject, "highlight-conflict", isOn);
                 setClass(linkUI, "highlight-conflict", isOn);
             }
         });
@@ -739,7 +742,7 @@ function renderGraph(content, options) {
         springLength: 80,
         springCoeff: 0.00005,
         //dragCoeff: 0.00002,
-        gravity: -3,
+        gravity: -10,
         timeStep: 20,
         stableThreshold: 0.03
        // dragCoeff: 0.02,
