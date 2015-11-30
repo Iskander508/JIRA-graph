@@ -119,6 +119,45 @@ function renderGraph(content, options) {
         graph.removeNode(nodeId);
         displayedNodeIds.delete(nodeId);
     });
+    
+    
+    // shrink git commit nodes
+    {
+        var tryNext = true;
+        while(tryNext) {
+            graph.forEachNode(function(node) {
+                if (!tryNext || node.data.type != 'git' || node.data.data.type != 'commit') return;
+                
+                var links = graph.getLinks(node.id);
+                var inLinkCount = 0;
+                var outLinkCount = 0;
+                var inLink = null;
+                var outLink = null;
+                for (var index = 0; index < links.length; index++) {
+                    var link = links[index];
+                    if (link.toId == node.id) {
+                        inLinkCount++;
+                        inLink = link;
+                    } else {
+                        outLinkCount++;
+                        outLink = link;
+                    }
+                }
+                
+                if (inLinkCount == 0 && outLinkCount <= 1) {
+                } else if (inLinkCount == 1 && outLinkCount == 1) {
+                    var numCommits = parseInt(outLink.data, 10) + parseInt(outLink.data, 10);
+                    graph.addLink(inLink.fromId, outLink.toId, '' + numCommits);
+                } else return;
+                
+                graph.removeNode(node.id);
+                displayedNodeIds.delete(node.id);
+                tryNext = false;
+            });
+            
+            tryNext = !tryNext;
+        }
+    }
 
 
 
