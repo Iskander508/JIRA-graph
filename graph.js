@@ -201,17 +201,23 @@ function renderGraph(content, options) {
     };
 
 
-    var highlightCommits = function(nodeId, isOn, successors) {
+    var highlightCommits = function(nodeId, isOn, successors, omitConflicts) {
         graph.forEachLinkedNode(nodeId, function(otherNode, link){
             if (otherNode.id == (successors ? link.fromId : link.toId)) return; // only derived commits
-
+            if (otherNode.data.type != 'git') return;
+            
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
-                if (otherNode.data.type == 'git' && otherNode.data.data.type != 'conflict') {
+                if (otherNode.data.data.type == 'conflict') {
+                    if (!successors || omitConflicts) return;
+                    setClass(linkUI, "highlight-conflict", isOn);
+                    setClass(otherNode.data.svgObject, "highlight-conflict", isOn);
+                    setClass(otherNode.data.svgObject, "highlight-level-3", isOn);
+                } else {
                     var highlightClass = successors ? "highlight-successor" : "highlight-predecessor";
                     setClass(linkUI, highlightClass, isOn);
                     setClass(otherNode.data.svgObject, highlightClass, isOn);
-                    highlightCommits(otherNode.id, isOn, successors);
+                    highlightCommits(otherNode.id, isOn, successors, true);
                 }
             }
         });
