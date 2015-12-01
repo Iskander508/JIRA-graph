@@ -239,9 +239,16 @@ function renderGraph(content, options) {
             if (linkUI) {
                 if (otherNode.data.data.type == 'conflict') {
                     if (!successors || omitConflicts) return;
-                    setClass(linkUI, "highlight-conflict", isOn);
                     setClass(otherNode.data.svgObject, "highlight-conflict", isOn);
-                    setClass(otherNode.data.svgObject, "highlight-level-3", isOn);
+                    graph.forEachLinkedNode(otherNode.id, function(nextNode, nextLink){
+                        var nextLinkUI = graphics.getLinkUI(nextLink.id);
+                        if (nextLinkUI) {
+                            setClass(nextLinkUI, "highlight-conflict", isOn);
+                        }
+                        if (nextLink.fromId != nodeId) {
+                            setClass(nextNode.data.svgObject, "highlight-conflict", isOn);
+                        }
+                    });
                 } else {
                     var highlightClass = successors ? "highlight-successor" : "highlight-predecessor";
                     setClass(linkUI, highlightClass, isOn);
@@ -462,15 +469,15 @@ function renderGraph(content, options) {
                                 {
                                     var svgImage = Viva.Graph.svg('image')
                                        .attr('width', 15)
-                                       .attr('height', 15)
-                                       .attr('x', 2).attr('y', 2)
+                                       .attr('height', 17)
+                                       .attr('x', 2).attr('y', 3)
                                        .link('branch.svg');
                                         svgImage.append(Viva.Graph.svg('title').text(gitData.master ? 'master branch' : 'branch'));
                                     svgNode.append(svgImage);
                                 }
 
                                     
-                                var startY = 15;
+                                var startY = 17;
                                 for (var index = 0; index < gitData.branchNames.length; index++) {
                                     var branchName = gitData.branchNames[index];
                                     var svgText = Viva.Graph.svg('text')
@@ -523,15 +530,15 @@ function renderGraph(content, options) {
                                 {
                                     var svgImage = Viva.Graph.svg('image')
                                        .attr('width', 15)
-                                       .attr('height', 15)
-                                       .attr('x', 2).attr('y', 2)
+                                       .attr('height', 17)
+                                       .attr('x', 2).attr('y', 3)
                                        .link('git.png');
                                     svgNode.append(svgImage);
                                 }
 
                                 var svgText = Viva.Graph.svg('text')
                                     .attr('x', 20)
-                                    .attr('y', 15)
+                                    .attr('y', 17)
                                     .text(gitData.id.substring(0,10));
                                 svgTitle.append(svgText);
                                 
@@ -555,7 +562,7 @@ function renderGraph(content, options) {
                                     var svgImage = Viva.Graph.svg('image')
                                        .attr('width', 15)
                                        .attr('height', 15)
-                                       .attr('x', 2).attr('y', 2)
+                                       .attr('x', 2).attr('y', 4)
                                        .link('conflict.svg');
                                        svgImage.append(Viva.Graph.svg('title').text('potential merge conflict'));
                                     svgNode.append(svgImage);
@@ -597,9 +604,9 @@ function renderGraph(content, options) {
                     {
                         {
                             var svgImage = Viva.Graph.svg('image')
-                               .attr('width', 18)
+                               .attr('width', 15)
                                .attr('height', 15)
-                               .attr('x', 2).attr('y', 2)
+                               .attr('x', 2).attr('y', 3)
                                .link('pull-request.svg');
                             svgImage.append(Viva.Graph.svg('title').text('Pull request'));
                             svgNode.append(svgImage);
@@ -613,7 +620,7 @@ function renderGraph(content, options) {
                         {
                             var svgText = Viva.Graph.svg('text')
                             .attr('x', 22)
-                            .attr('y', 15)
+                            .attr('y', 16)
                             .text(pullRequestData.id + ': ' + pullRequestData.name);
                             svgTitle.append(svgText);
                         }
@@ -814,9 +821,9 @@ function renderGraph(content, options) {
     // Render the graph
     var layout = Viva.Graph.Layout.forceDirected(graph, {
         springLength: 80,
-        springCoeff: 0.00005,
+        springCoeff: 0.00002,
         //dragCoeff: 0.00002,
-        gravity: -10,
+        gravity: -20,
         timeStep: 20,
         stableThreshold: 0.03
        // dragCoeff: 0.02,
