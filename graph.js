@@ -121,6 +121,33 @@ function renderGraph(content, options) {
     });
     
     
+    // returns true when there exists a path (indirected) from sourceId to targetId without using node from omitIds
+    function commitPairIsConnected(sourceId, targetId, omitIds) {
+        var connected = false;
+        graph.forEachLinkedNode(sourceId, function(otherNode, link){
+            if (omitIds.indexOf(otherNode.id) != -1) return;
+            if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') return;
+            
+            if (connected = connected || (otherNode.id == targetId)) return;
+            
+            if (commitPairIsConnected(otherNode.id, targetId, omitIds.concat([sourceId]))) {
+                connected = true;
+            }
+        });
+        return connected;
+    }
+    
+    // returns true when there exists a path (indirected) among all nodeIds without using node from omitIds
+    function commitsAreConnected(nodeIds, omitIds) {
+        for (var index1 = 0; index1 < nodeIds.length; index1++) {
+            for (var index2 = index1 + 1; index2 < nodeIds.length; index2++) {
+                if (!commitPairIsConnected(nodeIds[index1], nodeIds[index2], omitIds)) return false;
+            }
+        }
+        return true;
+    }
+    
+    
     // shrink git commit nodes
     {
         var tryNext = true;
@@ -133,6 +160,7 @@ function renderGraph(content, options) {
                 var outLinkCount = 0;
                 var inLink = null;
                 var outLink = null;
+                var outIds = [];
                 for (var index = 0; index < links.length; index++) {
                     var link = links[index];
                     if (link.toId == node.id) {
@@ -141,10 +169,11 @@ function renderGraph(content, options) {
                     } else {
                         outLinkCount++;
                         outLink = link;
+                        outIds.push(link.toId);
                     }
                 }
                 
-                if (inLinkCount == 0 && outLinkCount <= 1) {
+                if (inLinkCount == 0 && (commitsAreConnected(outIds, [node.id]))) {
                 } else if (inLinkCount == 1 && outLinkCount == 1) {
                     var numCommits = parseInt(outLink.data, 10) + parseInt(outLink.data, 10);
                     graph.addLink(inLink.fromId, outLink.toId, '' + numCommits);
