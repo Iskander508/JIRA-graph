@@ -34,7 +34,7 @@
                 error: function (request, status, error) { alert(status + ", " + error); }
             });
             
-            $('#layout').attr("checked", false);
+            $('#layout').removeAttr('checked');
         }
 
         function getOptions() {
