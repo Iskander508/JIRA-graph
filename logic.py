@@ -91,7 +91,11 @@ class Logic:
             if 'branches' in data:
                 linkedBranches = set()
                 for branch in data['branches']:
-                    gitId = gitRepository.revParse('origin/' + branch['name'])
+                    try:
+                        gitId = gitRepository.revParse('origin/' + branch['name'])
+                    except git.GIT.GitError:
+                        continue
+                    
                     nodeId = self.getGitNodeId(gitId)
                     if gitId not in linkedBranches:
                         g.addEdge(graph.Edge(self.getIssueNodeId(id), nodeId))
