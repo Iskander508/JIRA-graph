@@ -154,30 +154,13 @@ class Logic:
             masterBranch = (id in masterIds)
             for branch in gitRepository.getBranches(id):
                 branchNames.append(branch.name)
-            
-            inMaster = ((not masterBranch)
-                        and (g.getPredecessors(id, direct=False).isdisjoint(masterIds))
-                        and (not g.getSuccessors(id, direct=False).isdisjoint(masterIds))
-                        )
 
             result.append({
                             'id': id,
                             'master': masterBranch,
                             'branchNames': branchNames,
-                            'inMaster': inMaster,
-                            'mergeBase': False,
                             'successors': g.getSuccessors(id)
                         })
-                        
-        # mark nodes connecting master and non-master paths
-        for node in result:
-            if node['inMaster']:
-                for sId in node['successors']:
-                    if not node['mergeBase']:
-                        for S in result:
-                            if S['id'] == sId and (not S['inMaster']) and (not S['master']):
-                                node['mergeBase'] = True
-                                break
                                 
         return result
         
