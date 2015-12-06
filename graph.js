@@ -62,6 +62,37 @@ function renderGraph(content, options) {
         if (!displayedNodeIds.has(edge.source) || !displayedNodeIds.has(edge.target)) continue;
         graph.addLink(edge.source, edge.target, edge.type);
     }
+    
+    
+    
+    
+    // returns true when there exists a path (indirected) from sourceId to targetId without using node from omitIds
+    function commitPairIsConnected(sourceId, targetId, omitIds) {
+        var connected = false;
+        graph.forEachLinkedNode(sourceId, function(otherNode, link){
+            if (omitIds.indexOf(otherNode.id) != -1) return;
+            if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') return;
+            
+            if (connected = connected || (otherNode.id == targetId)) return;
+            
+            if (commitPairIsConnected(otherNode.id, targetId, omitIds.concat([sourceId]))) {
+                connected = true;
+            }
+        });
+        return connected;
+    }
+    
+    // returns true when there exists a path (indirected) among all nodeIds without using node from omitIds
+    function commitsAreConnected(nodeIds, omitIds) {
+        for (var index1 = 0; index1 < nodeIds.length; index1++) {
+            for (var index2 = index1 + 1; index2 < nodeIds.length; index2++) {
+                if (!commitPairIsConnected(nodeIds[index1], nodeIds[index2], omitIds)) return false;
+            }
+        }
+        return true;
+    }
+    
+    
 
     var nodeIdsToRemove = new Set();
     if (!showALLissues) {
@@ -116,36 +147,28 @@ function renderGraph(content, options) {
     }
 
     nodeIdsToRemove.forEach(function (nodeId) {
+        var node = graph.getNode(nodeId);
+        if (node.data.type == 'git' && node.data.data.type != 'conflict') {
+            var links = graph.getLinks(nodeId);
+            
+            var neighborIds = [];
+            for (var index = 0; index < links.length; index++) {
+                var link = links[index];
+                var otherId = (link.fromId == nodeId ? link.toId : link.fromId);
+                var otherNode = graph.getNode(otherId);
+                if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') continue;
+                neighborIds.push(otherId);
+            }
+            
+            if (!commitsAreConnected(neighborIds, [nodeId])) return;
+        }
+    
         graph.removeNode(nodeId);
         displayedNodeIds.delete(nodeId);
     });
     
     
-    // returns true when there exists a path (indirected) from sourceId to targetId without using node from omitIds
-    function commitPairIsConnected(sourceId, targetId, omitIds) {
-        var connected = false;
-        graph.forEachLinkedNode(sourceId, function(otherNode, link){
-            if (omitIds.indexOf(otherNode.id) != -1) return;
-            if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') return;
-            
-            if (connected = connected || (otherNode.id == targetId)) return;
-            
-            if (commitPairIsConnected(otherNode.id, targetId, omitIds.concat([sourceId]))) {
-                connected = true;
-            }
-        });
-        return connected;
-    }
     
-    // returns true when there exists a path (indirected) among all nodeIds without using node from omitIds
-    function commitsAreConnected(nodeIds, omitIds) {
-        for (var index1 = 0; index1 < nodeIds.length; index1++) {
-            for (var index2 = index1 + 1; index2 < nodeIds.length; index2++) {
-                if (!commitPairIsConnected(nodeIds[index1], nodeIds[index2], omitIds)) return false;
-            }
-        }
-        return true;
-    }
     
     
     // shrink git commit nodes
