@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 import jira
@@ -6,6 +6,7 @@ import graph
 import gitGraph
 import git
 import os
+import shutil
     
 class LogicError(Exception):
     def __init__(self, value):
@@ -18,7 +19,8 @@ class Logic:
     def __init__(self, config={
                                 'jira': {
                                     'url': 'https://jira.atlassian.com',
-                                    'auth': None
+                                    'auth': None,
+                                    'projectKey': 'ZPL'
                                     },
                                 'git': {
                                     'repository': 'C:\\git',
@@ -136,7 +138,19 @@ class Logic:
     def calculateBranches(self, branches):
         gitRepository = git.GIT(self.config['git']['repository'])
         
-        gitRepository.reset()
+        try:
+            gitRepository.reset()
+        except git.GIT.GitError:
+            for item in os.listdir(self.config['git']['repository']):
+                if item.startswith('.git'):
+                    continue
+                itemPath = os.path.join(self.config['git']['repository'], item)
+                if os.path.isdir(itemPath):
+                    shutil.rmtree(itemPath)
+                else:
+                    os.remove(itemPath)
+            gitRepository.reset()
+                        
         gitRepository.fetch()
         
         g = gitGraph.GitGraph(gitRepository)
@@ -200,7 +214,18 @@ class Logic:
                         if len(conflict['files']) != 0:
                             result.append(conflict)
                         
-                    gitRepository.reset()
+                    try:
+                        gitRepository.reset()
+                    except git.GIT.GitError:
+                        for item in os.listdir(self.config['git']['repository']):
+                            if item.startswith('.git'):
+                                continue
+                            itemPath = os.path.join(self.config['git']['repository'], item)
+                            if os.path.isdir(itemPath):
+                                shutil.rmtree(itemPath)
+                            else:
+                                os.remove(itemPath)
+                        gitRepository.reset()
                     
         return result
         
@@ -281,8 +306,9 @@ class Logic:
         links = self.getIssueLinks(issueData)
         if len(links) != 0:
             issue['links'] = links
-            
-        issue.update(self.parseIssueDetails(self.jira.getIssueDetails(issueData['id'])))
+
+        if issueData['key'].startswith(self.config['jira']['projectKey']):
+            issue.update(self.parseIssueDetails(self.jira.getIssueDetails(issueData['id'])))
             
         return issue
         
