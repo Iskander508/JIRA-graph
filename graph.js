@@ -540,6 +540,10 @@ function renderGraph(content, options) {
                                     if (content.masterBranches.indexOf(branchName) != -1) {
                                         svgText.attr('class', 'master');
                                     }
+                                    
+                                    if (content.additionalBranches && content.additionalBranches.indexOf(branchName) != -1) {
+                                        svgText.attr('class', 'additional');
+                                    }
 
                                     svgTitle.append(svgText);
                                     startY += 15;

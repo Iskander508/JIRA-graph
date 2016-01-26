@@ -131,7 +131,7 @@ class Logic:
                                 
                         g.addEdge(graph.Edge(self.getIssueNodeId(id), pullRequestId))
                         
-        g.saveGraphJson(filePath, {'masterBranches': masterBranches})
+        g.saveGraphJson(filePath, {'masterBranches': masterBranches, 'additionalBranches': additionalBranches})
         
     def calculateBranches(self, branches):
         gitRepository = git.GIT(self.config['git']['repository'])
