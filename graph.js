@@ -151,48 +151,44 @@ function renderGraph(content, options) {
         while(changed) {
             changed = false;
             graph.forEachNode(function(node) {
-                if (node.data.type == 'git' && node.data.data.inMaster && !nodeIdsToRemove.has(node.id)) {
-                
-                    var isImportant = false;
-                    graph.getLinks(node.id).forEach(function(linkTo) {
-                        var target = graph.getNode(linkTo.toId);
-                        if (!isImportant && target.data.type == 'git' && target.id != node.id && !nodeIdsToRemove.has(target.id)) {
-                            graph.getLinks(node.id).forEach(function(linkFrom) {
-                                var source = graph.getNode(linkFrom.fromId);
-                                if (!isImportant && source.data.type == 'git' && source.id != node.id && !nodeIdsToRemove.has(source.id)) {
-                                    if (!commitPairIsConnected(source.id, target.id, [...nodeIdsToRemove, node.id], true))
-                                        isImportant = true;
-                                }
-                            });
-                        }
-                    });
-                    
-                    if (!isImportant) {
-                        nodeIdsToRemove.add(node.id);
-                        changed = true;
+                if (!(node.data.type == 'git' && node.data.data.inMaster && !nodeIdsToRemove.has(node.id))) return;
+            
+                var isImportant = false;
+                graph.getLinks(node.id).forEach(function(linkTo) {
+                    var target = graph.getNode(linkTo.toId);
+                    if (!isImportant && target.data.type == 'git' && target.id != node.id && !nodeIdsToRemove.has(target.id)) {
+                        graph.getLinks(node.id).forEach(function(linkFrom) {
+                            var source = graph.getNode(linkFrom.fromId);
+                            if (!isImportant && source.data.type == 'git' && source.id != node.id && !nodeIdsToRemove.has(source.id)) {
+                                if (!commitPairIsConnected(source.id, target.id, [...nodeIdsToRemove, node.id], true))
+                                    isImportant = true;
+                            }
+                        });
                     }
+                });
+                
+                if (!isImportant) {
+                    var links = graph.getLinks(node.id);
+                    
+                    var neighborIds = [];
+                    for (var index = 0; index < links.length; index++) {
+                        var link = links[index];
+                        var otherId = (link.fromId == node.id ? link.toId : link.fromId);
+                        var otherNode = graph.getNode(otherId);
+                        if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') continue;
+                        neighborIds.push(otherId);
+                    }
+                    
+                    if (!commitsAreConnected(neighborIds, [node.id])) return;
+        
+                    nodeIdsToRemove.add(node.id);
+                    changed = true;
                 }
             });
         }
     }
     
     nodeIdsToRemove.forEach(function (nodeId) {
-        var node = graph.getNode(nodeId);
-        if (node.data.type == 'git' && node.data.data.type != 'conflict') {
-            var links = graph.getLinks(nodeId);
-            
-            var neighborIds = [];
-            for (var index = 0; index < links.length; index++) {
-                var link = links[index];
-                var otherId = (link.fromId == nodeId ? link.toId : link.fromId);
-                var otherNode = graph.getNode(otherId);
-                if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') continue;
-                neighborIds.push(otherId);
-            }
-            
-            if (!commitsAreConnected(neighborIds, [nodeId])) return;
-        }
-    
         graph.removeNode(nodeId);
         displayedNodeIds.delete(nodeId);
     });
