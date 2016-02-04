@@ -311,35 +311,96 @@ function renderGraph(content, options) {
     };
 
     var showIssues = function (node) {
-        toggleClass(node.data.svgObject, "selected");
 
-        if (!hasClass(node.data.svgObject, "selected")) {
-            var toBeRemoved = [];
+        if (hasClass(node.data.svgObject, "selected")) {
+            var nodeIdsToBeRemoved = [];
             graph.forEachLinkedNode(node.id, function (otherNode, link) {
                 if (otherNode.data.type == 'JIRA') {
-                    toBeRemoved.push(otherNode.id);
+                    nodeIdsToBeRemoved.push(otherNode.id);
                 }
             });
 
-            for (var index = 0; index < toBeRemoved.length; index++) {
-                graph.removeNode(toBeRemoved[index]);
-                displayedNodeIds.delete(toBeRemoved[index]);
+            var successfulRemoval = true;
+            for (var index = 0; index < nodeIdsToBeRemoved.length; index++) {
+                var removedId = nodeIdsToBeRemoved[index];
+                var canRemove = true;
+                graph.forEachLinkedNode(removedId, function (otherNode, link) {
+                    if (otherNode.data.type == 'JIRA' && otherNode.id != node.id) {
+                        canRemove = false;
+                        successfulRemoval = false;
+                    }
+                });
+                
+                if (canRemove) {
+                    // remove whole node
+                    graph.forEachLinkedNode(removedId, function (otherNode, link) {
+                        if (link.label) {
+                            link.label.attr('display', 'none');
+                        }
+                        graph.removeLink(link);
+                    });
+                    graph.removeNode(removedId);
+                    displayedNodeIds.delete(removedId);
+                } else {
+                    // remove links leading to the node
+                    var hasOtherLinks = false; // if the node has links to other nodes
+                    graph.forEachLinkedNode(removedId, function (otherNode, link) {
+                        if (otherNode.id != node.id) {
+                            hasOtherLinks = true;
+                        }
+                    });
+                    if (!hasOtherLinks) return;
+                    hasOtherLinks = false; // and current node has links to other nodes
+                    graph.forEachLinkedNode(node.id, function (otherNode, link) {
+                        if (otherNode.id != removedId) {
+                            hasOtherLinks = true;
+                        }
+                    });
+                    if (!hasOtherLinks) return;
+                    graph.forEachLinkedNode(removedId, function (otherNode, link) {
+                        if (otherNode.id == node.id) {
+                            if (link.label) {
+                                link.label.attr('display', 'none');
+                            }
+                            graph.removeLink(link);
+                        }
+                    });
+                }
+            }
+            
+            if (successfulRemoval) {
+                toggleClass(node.data.svgObject, "selected");
             }
 
             return;
         }
+        
+        toggleClass(node.data.svgObject, "selected");
 
         var edges = nodeToEdgesMap[node.id];
         for (var index = 0; index < edges.length; index++) {
             var edge = edges[index];
             var otherNodeId = (edge.source == node.id) ? edge.target : edge.source;
-            if (displayedNodeIds.has(otherNodeId)) continue;
 
             var nodeItem = nodeToDataMap[otherNodeId];
             if (nodeItem.type == 'JIRA') {
-                graph.addNode(nodeItem.id, nodeItem);
-                displayedNodeIds.add(nodeItem.id);
-                graph.addLink(edge.source, edge.target, edge.type);
+                if (!displayedNodeIds.has(otherNodeId)) {
+                    graph.addNode(nodeItem.id, nodeItem);
+                    displayedNodeIds.add(nodeItem.id);
+                }
+                
+                var linkAlreadyExists = false;
+                var currentLinks = graph.getLinks(edge.source);
+                for (var i = 0; i < currentLinks.length; i++) {
+                    var link = currentLinks[i];
+                    if (link.fromId == edge.source && link.toId == edge.target && link.data == edge.type) {
+                        linkAlreadyExists = true;
+                        break;
+                    }
+                }
+                if (!linkAlreadyExists) {
+                    graph.addLink(edge.source, edge.target, edge.type);
+                }
             }
         }
     };
@@ -499,6 +560,12 @@ function renderGraph(content, options) {
                     }, function() { // mouse out
                         highlightIssue(node, false, 3);
                     });
+                    
+                    if (!showJIRAissues) {
+                        $(svgNode).click(function () { // mouse click
+                            showIssues(node);
+                        });
+                    }
                 }
                 break;
             case 'git':
@@ -855,21 +922,19 @@ function renderGraph(content, options) {
         path.attr("d", data);
 
         if (path.link.data) {
-            if (!path.label) {
+            if (!path.link.label) {
                 var svgText = Viva.Graph.svg('text').text(path.link.data);
                 svgText.attr('font-size', 9);
                 path.parentNode.append(svgText);
-                path["label"] = svgText;
+                path.link["label"] = svgText;
             }
 
-            path.label.attr('x', (from.x + to.x) / 2).attr('y', (from.y + to.y) / 2);
+            path.link.label.attr('x', (from.x + to.x) / 2).attr('y', (from.y + to.y) / 2);
         }
         
-        //if (isIE) {
-            var parent = path.parentNode;
-            parent.removeChild(path);
-            parent.appendChild(path);
-        //}
+        var parent = path.parentNode;
+        parent.removeChild(path);
+        parent.appendChild(path);
     });
 
 
