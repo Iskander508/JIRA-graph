@@ -279,15 +279,15 @@ function renderGraph(content, options) {
     };
 
 
-    var highlightCommits = function(nodeId, isOn, successors, omitConflicts) {
-        graph.forEachLinkedNode(nodeId, function(otherNode, link){
+    var highlightCommits = function(nodeId, isOn, successors, additionalLevel) {
+        graph.forEachLinkedNode(nodeId, function(otherNode, link) {
             if (otherNode.id == (successors ? link.fromId : link.toId)) return; // only derived commits
-            if (otherNode.data.type != 'git') return;
+            if (otherNode.data.type != 'git' && (additionalLevel || otherNode.data.type != 'stash')) return;
             
             var linkUI = graphics.getLinkUI(link.id);
             if (linkUI) {
                 if (otherNode.data.data.type == 'conflict') {
-                    if (!successors || omitConflicts) return;
+                    if (!successors || additionalLevel) return;
                     setClass(otherNode.data.svgObject, "highlight-conflict", isOn);
                     graph.forEachLinkedNode(otherNode.id, function(nextNode, nextLink){
                         var nextLinkUI = graphics.getLinkUI(nextLink.id);
@@ -302,7 +302,9 @@ function renderGraph(content, options) {
                     var highlightClass = successors ? "highlight-successor" : "highlight-predecessor";
                     setClass(linkUI, highlightClass, isOn);
                     setClass(otherNode.data.svgObject, highlightClass, isOn);
-                    highlightCommits(otherNode.id, isOn, successors, true);
+                    if (otherNode.data.type == 'git') {
+                        highlightCommits(otherNode.id, isOn, successors, true);
+                    }
                 }
             }
         });
