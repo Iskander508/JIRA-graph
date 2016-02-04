@@ -56,8 +56,8 @@ g.highlight-conflict rect.boundary { stroke: red; fill: rgba(220, 20, 60, 0.7); 
 g.highlight-conflict text { fill: white !important; }
 g.highlight-successor rect.boundary { stroke: green; }
 g.highlight-predecessor rect.boundary { stroke: blue; }
-g.stash.highlight-successor rect.boundary { stroke-width:2; fill:rgba(0, 255, 0, 0.08); }
-g.stash.highlight-predecessor rect.boundary { stroke-width:2; fill:rgba(0, 0, 255, 0.08); }
+g.stash.highlight-successor rect.boundary, g.stash.highlight-predecessor rect.boundary { stroke-width:2; fill:black; }
+g.stash.highlight-successor text, g.stash.highlight-predecessor text { fill: white !important; }
 
 
 path { stroke: gray; }
