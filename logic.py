@@ -378,7 +378,7 @@ class Logic:
         for id, name in activeSprints.items():
             board = self.jira.getAgileBoard(jiraProjectId, id)
             for key, value in board['contents'].items():
-                if ('Issues' in key) and (type(value) is list):
+                if ('Issues' in key or 'issues' in key) and (type(value) is list):
                     issues.extend(value)
 
         return issues
