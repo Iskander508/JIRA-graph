@@ -175,11 +175,11 @@ function renderGraph(content, options) {
                         var link = links[index];
                         var otherId = (link.fromId == node.id ? link.toId : link.fromId);
                         var otherNode = graph.getNode(otherId);
-                        if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict') continue;
+                        if (otherNode.data.type != 'git' || otherNode.data.data.type == 'conflict' || nodeIdsToRemove.has(otherId)) continue;
                         neighborIds.push(otherId);
                     }
                     
-                    if (!commitsAreConnected(neighborIds, [node.id])) return;
+                    if (!commitsAreConnected(neighborIds, [...nodeIdsToRemove, node.id])) return;
         
                     nodeIdsToRemove.add(node.id);
                     changed = true;
