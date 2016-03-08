@@ -202,7 +202,7 @@ class Logic:
         for commitA in commits:
             for commitB in commits:
                 if commitA > commitB:
-                    gitRepository.checkout(commitA)
+                    gitRepository.checkout(commitA, force=True)
                     try:
                         gitRepository.merge(commitB)
                     except git.GIT.GitError:

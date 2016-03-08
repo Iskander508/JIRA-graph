@@ -28,8 +28,11 @@ class GIT:
             params.append('--short')
         return self.runGit(params)
         
-    def checkout(self, id, updateSubmodules=True):
-        self.runGit(['checkout', self.parseId(id)])
+    def checkout(self, id, updateSubmodules=True, force=False):
+        params = ['checkout', self.parseId(id)]
+        if short:
+            params.append('--force')
+        self.runGit(params)
         if updateSubmodules:
             return self.runGit(['submodule', 'update', '--init', '--recursive'])
         
