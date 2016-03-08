@@ -30,7 +30,7 @@ class GIT:
         
     def checkout(self, id, updateSubmodules=True, force=False):
         params = ['checkout', self.parseId(id)]
-        if short:
+        if force:
             params.append('--force')
         self.runGit(params)
         if updateSubmodules:
