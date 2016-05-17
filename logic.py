@@ -253,7 +253,11 @@ class Logic:
         issues = {}
         for majorIssueData in self.getActiveSprintsIssues(jiraProjectId):
             issueData = self.jira.getIssue(majorIssueData['key'])
-            issue = self.parseIssue(issueData)
+            try:
+                issue = self.parseIssue(issueData)
+            except:
+                continue
+            
             
             issue['done'] = majorIssueData['done']
             
@@ -266,7 +270,10 @@ class Logic:
             if 'subtasks' in issue:
                 for subtaskKey in issue['subtasks']:
                     subtaskData = self.jira.getIssue(subtaskKey)
-                    issues[subtaskData['id']] = self.parseIssue(subtaskData)
+                    try:
+                        issues[subtaskData['id']] = self.parseIssue(subtaskData)
+                    except:
+                        continue
                     
             if 'links' in issue:
                 # Parse only linked issues that haven't been parsed yet
@@ -283,7 +290,7 @@ class Logic:
         
         return issues
         
-    def parseIssue(self, issueData):        
+    def parseIssue(self, issueData):
         issue = {
             'code': issueData['key'],
             'type': ''.join(issueData['fields']['issuetype']['name'].split()),
