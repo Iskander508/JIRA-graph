@@ -8,6 +8,7 @@ class JIRA:
     def __init__(self, url='https://jira.atlassian.com', auth=None):
         self.url = url
         self.auth = auth
+        requests.packages.urllib3.disable_warnings()
 
     def getSprints(self, projectId):
         return self.get('/rest/greenhopper/latest/sprintquery/{0}'.format(projectId))

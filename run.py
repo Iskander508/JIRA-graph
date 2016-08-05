@@ -7,12 +7,13 @@ import time
 import os
 import shutil
 import sys
-import distutils
+from distutils import dir_util
 
 destinationOutDir = sys.argv[1]
 
 startTimes = [
     "07:00",
+    "08:30",
     "09:30",
     "10:30",
     "11:30",
@@ -48,8 +49,15 @@ def getHour(startTime):
     return int(startTime[:2])
     
 def runLogic():
-    #l = logic.Logic(logicConfig)
-    return 0
+    tmpDir = 'tmp_out'
+    if os.path.exists(tmpDir):
+        shutil.rmtree(tmpDir, ignore_errors=True)
+    os.makedirs(tmpDir)
+            
+    l = logic.Logic(logicConfig)
+    l.createGraph(588, tmpDir + '/data.json', masterBranches=['zaap/devel'], additionalBranches=[])
+    
+    dir_util.copy_tree(tmpDir, destinationOutDir, update=True)
     
 runLogic()
 while True:
@@ -75,4 +83,8 @@ while True:
         continue
         
     print("Performing at " + nextStartTime)
-    runLogic()
+    try:
+        runLogic()
+    except:
+        pass
+    
