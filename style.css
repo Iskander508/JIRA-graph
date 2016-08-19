@@ -69,23 +69,23 @@ path.highlight-predecessor { stroke: blue; stroke-width: 2; }
 path.highlight-conflict { stroke: red; stroke-width: 2; }
 
 /* JIRA epic */
-rect.ghx-label-0 {fill:#fff;stroke:#707070;}
-text.ghx-label-0 {fill:#707070;}
-rect.ghx-label-1 {fill:#815b3a;}
-text.ghx-label-1 {fill:#fff;}
-rect.ghx-label-2 {fill:#f79232;}
-text.ghx-label-2 {fill:#fff;}
-rect.ghx-label-3 {fill:#d39c3f;}
-text.ghx-label-3 {fill:#fff;}
-rect.ghx-label-4 {fill:#3b7fc4;}
-text.ghx-label-4 {fill:#fff;}
-rect.ghx-label-5 {fill:#4a6785;}
-text.ghx-label-5 {fill:#fff;}
-rect.ghx-label-6 {fill:#8eb021;}
-text.ghx-label-6 {fill:#fff;}
-rect.ghx-label-7 {fill:#ac707a;}
-text.ghx-label-7 {fill:#fff;}
-rect.ghx-label-8 {fill:#654982;}
-text.ghx-label-8 {fill:#fff;}
-rect.ghx-label-9 {fill:#f15c75;}
-text.ghx-label-9 {fill:#fff;}
+rect.color_0 {fill:#fff;stroke:#707070;}
+text.color_0 {fill:#707070;}
+rect.color_1 {fill:#815b3a;}
+text.color_1 {fill:#fff;}
+rect.color_2 {fill:#f79232;}
+text.color_2 {fill:#fff;}
+rect.color_3 {fill:#d39c3f;}
+text.color_3 {fill:#fff;}
+rect.color_4 {fill:#3b7fc4;}
+text.color_4 {fill:#fff;}
+rect.color_5 {fill:#4a6785;}
+text.color_5 {fill:#fff;}
+rect.color_6 {fill:#8eb021;}
+text.color_6 {fill:#fff;}
+rect.color_7 {fill:#ac707a;}
+text.color_7 {fill:#fff;}
+rect.color_8 {fill:#654982;}
+text.color_8 {fill:#fff;}
+rect.color_9 {fill:#f15c75;}
+text.color_9 {fill:#fff;}

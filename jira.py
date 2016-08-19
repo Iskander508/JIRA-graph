@@ -15,6 +15,9 @@ class JIRA:
         
     def getAgileBoard(self, projectId, sprintId):
         return self.get('/rest/greenhopper/latest/rapid/charts/sprintreport?rapidViewId={0}&sprintId={1}'.format(projectId, sprintId))
+
+    def getBoard(self, boardId, issueFields):
+        return self.get('/rest/agile/latest/board/{0}/issue?fields={1}'.format(boardId, issueFields))
     
     def getIssue(self, issueId):
         return self.get('/rest/api/2/issue/{0}?fields=issuelinks,assignee,subtasks,progress,issuetype,summary,priority,status'.format(issueId))

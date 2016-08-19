@@ -33,9 +33,9 @@ class Logic:
         self.jira = jira.JIRA(url=config['jira']['url'], auth=config['jira']['auth'])
         self.config = config
         
-    def createGraph(self, jiraProjectId, filePath, masterBranches=[], additionalBranches=[]):
+    def createGraph(self, jiraBoardId, filePath, masterBranches=[], additionalBranches=[]):
         
-        issues = self.parseActiveSprintIssues(jiraProjectId)
+        issues = self.parseActiveSprintIssues(jiraBoardId)
         
         codeIdMap = {}
         branches = {}
@@ -249,9 +249,9 @@ class Logic:
             
         return result
         
-    def parseActiveSprintIssues(self, jiraProjectId):
+    def parseActiveSprintIssues(self, jiraBoardId):
         issues = {}
-        for majorIssueData in self.getActiveSprintsIssues(jiraProjectId):
+        for majorIssueData in self.getBoardIssues(jiraBoardId):
             issueData = self.jira.getIssue(majorIssueData['key'])
             try:
                 issue = self.parseIssue(issueData)
@@ -259,11 +259,11 @@ class Logic:
                 continue
             
             
-            issue['done'] = majorIssueData['done']
+            issue['done'] = majorIssueData['fields']['status']['statusCategory']['key'] is 'done'
             
-            if 'epicField' in majorIssueData:
-                issue['epic'] = majorIssueData['epicField']['text']
-                issue['epicColor'] = majorIssueData['epicField']['epicColor']
+            if 'epic' in majorIssueData['fields']:
+                issue['epic'] = majorIssueData['fields']['epic']['name']
+                issue['epicColor'] = majorIssueData['fields']['epic']['color']['key']
                 
             issues[issueData['id']] = issue
             
@@ -376,29 +376,8 @@ class Logic:
                     })
         return links
 
-    def getActiveSprintsIssues(self, jiraProjectId):
-        activeSprints = self.getActiveSprints(jiraProjectId)
-        if len(activeSprints) == 0:
-            raise LogicError('No active sprints')
-        
-        issues = []
-        for id, name in activeSprints.items():
-            board = self.jira.getAgileBoard(jiraProjectId, id)
-            for key, value in board['contents'].items():
-                if ('Issues' in key or 'issues' in key) and (type(value) is list):
-                    issues.extend(value)
-
-        return issues
-            
-    def getActiveSprints(self, jiraProjectId):
-        sprints = self.jira.getSprints(jiraProjectId)
-        
-        activeSprints = {}
-        for sprint in sprints['sprints']:
-            if sprint['state'] == 'ACTIVE':
-                activeSprints[sprint['id']] = sprint['name']
-        
-        return activeSprints
+    def getBoardIssues(self, jiraBoardId):
+        return self.jira.getBoard(jiraBoardId, 'key,epic,status')['issues']
             
     def getIssueUrl(self, issueCode):
         return self.config['jira']['url'] + '/browse/' + issueCode
